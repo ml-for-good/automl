@@ -1,0 +1,4 @@
+[flake8]
+; ignore =
+exclude = .git
+max-complexity = 10
