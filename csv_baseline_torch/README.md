@@ -1,17 +1,17 @@
-1. 安装python（推荐miniconda），pytorch（参考官网教程）
-2. 训练，运行train.py
-3. 推理，运行test.py，生成提交文件（output_a.txt）
+1. Install python (miniconda is recommended), pytorch (refer to the official website tutorial)
+2. Train, run train.py
+3. Inference, run test.py, and generate a submission file (output_a.txt)
 
-数据处理
-python数据处理相关库
+data processing
+Python data processing related library
 numpy
 pandas
-特征⼯程
+feature engineering
 kaggle-tatanic
-模型训练
+model training
 sklearn
 pytorch
-样本不平衡
+sample imbalance
 github-surveys
 focal loss
-one-shot learning  
+one-shot learning
