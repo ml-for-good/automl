@@ -1,5 +1,16 @@
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
-import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Typography } from '@mui/material'
+import {
+  Box,
+  CssBaseline,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ThemeProvider,
+  Typography,
+} from '@mui/material'
 import {
   HomeOutlined as HomeIcon,
   TableViewOutlined as TableViewIcon,
@@ -20,13 +31,22 @@ export const App = () => {
         sx={{
           width: drawerWidth,
           '& > .MuiDrawer-paper': {
-            width: drawerWidth
-          }
+            width: drawerWidth,
+          },
         }}
         variant="persistent"
       >
-        <Box sx={{ textAlign: 'center', paddingTop: '2rem', paddingBottom: '1rem' }}>
-          <Typography variant="h5" sx={{ letterSpacing: '0.3em', userSelect: 'none', width: '100%' }}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            paddingTop: '2rem',
+            paddingBottom: '1rem',
+          }}
+        >
+          <Typography
+            variant="h5"
+            sx={{ letterSpacing: '0.3em', userSelect: 'none', width: '100%' }}
+          >
             AutoML
           </Typography>
         </Box>
