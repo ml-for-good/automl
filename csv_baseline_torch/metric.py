@@ -26,7 +26,6 @@ def Fscore(pred: torch.Tensor, y: torch.Tensor):
 
     P = Precision(pred, y)
     R = Recall(pred, y)
-
     F = 5 * P * R / (2 * P + 3 * R)
 
     return F
