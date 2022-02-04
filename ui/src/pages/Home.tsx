@@ -8,10 +8,11 @@ export const Home = () => {
     <Button
       color="primary"
       variant="contained"
-      onClick={() => setCount((count) => count + 1)}
+      onClick={() => setCount(v => v + 1)}
       sx={{ margin: '20px' }}
     >
-      count is: {count}
+      count is:
+      {count}
     </Button>
   )
 }

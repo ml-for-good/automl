@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-ui:
+    name: Lint UI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set node version to LTS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: ui
+
+      - name: Lint
+        run: pnpm run lint
+        working-directory: ui
