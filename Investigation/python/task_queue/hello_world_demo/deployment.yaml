@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello-test
+  template:
+    metadata:
+      labels:
+        app: hello-test
+    spec:
+      containers:
+      - name: hello-test
+        image: h2222/hello_world_service # docker hub上上传的镜像:https://hub.docker.com/repository/docker/h2222/hello_world_service
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8030
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-test-np-service
+spec:
+  selector:
+    app: hello-test
+  type: NodePort
+  ports:
+  - port: 8030
+    targetPort: 8030
+    nodePort: 30080
