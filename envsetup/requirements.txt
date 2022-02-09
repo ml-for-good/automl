@@ -1,0 +1,4 @@
+black==21.12b0
+flake8==4.0.1
+pylint==2.12.2
+pytype==2022.1.13
