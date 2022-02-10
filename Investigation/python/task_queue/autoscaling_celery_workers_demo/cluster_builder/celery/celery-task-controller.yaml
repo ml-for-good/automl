@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: task-controller
+  labels:
+    component: celery
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: taskQueue
+        component: celery
+    spec:
+      containers:
+        - name: task
+          image: celery-task
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 5672
+          resources:
+            limits:
+              cpu: 100m
