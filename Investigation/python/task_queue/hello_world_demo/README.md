@@ -9,3 +9,6 @@
 2. 运行`kubectl apply -f deployment.yaml`, 看到服务出现`create`或者 `unchange`说明运行成功
 3. 运行 `kubectl get pods` 查看Pod(容器), 运行 `kubectl get services` 查看服务, 其中`kubernetes`为minikube启动的服务
 4. 运行 `minikube service hello-test-np-service` 会自动跳转的浏览器页面, 如果返回结果说明正常
+
+ps: [如何启用本地镜像](https://medium.com/swlh/how-to-run-locally-built-docker-images-in-kubernetes-b28fbc32cc1d)
+在build本地镜像后, 输入`eval $(minikube -p minikube docker-env)`, 后在进行apply, 查看`kubectl get pods`观察pods状态, 如果为`running`说明运行成功, 如果为`ErrImageNeverPull`为失败.
