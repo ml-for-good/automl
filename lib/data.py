@@ -28,6 +28,7 @@ class Dataloader:
         return tf.as_string(feat)
 
     @classmethod
+    @tf.autograph.experimental.do_not_convert
     def _text_map_fn(cls, feature, label):
         result = []
         for feat in feature.values():
@@ -92,6 +93,7 @@ class Dataloader:
                         column_defaults=column_defaults,
                         field_delim=delimiter,
                         select_columns=select_cols,
+                        prefetch_buffer_size=64,
                         ignore_errors=True)
                     if isinstance(dataset, tf.data.Dataset):
                         dataset = dataset.concatenate(new_dataset)
@@ -106,7 +108,12 @@ class Dataloader:
                 map_fn = cls._image_map_fn
             else:
                 raise NotImplemented
-            return dataset.map(map_fn)
+            options = tf.data.Options()
+            options.experimental_optimization.map_parallelization = True
+            options.experimental_optimization.parallel_batch = True
+            return dataset.map(map_fn,
+                               num_parallel_calls=multiprocessing.cpu_count()
+                              ).unbatch().with_options(options)
 
         train_dataset = _get_dataset(train_file_pattern)
         val_dataset = _get_dataset(val_file_pattern, False)

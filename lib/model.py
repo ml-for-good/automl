@@ -7,10 +7,12 @@ CLASSIFICATION = 'classification'
 
 class StructuredDataModel:
     """
-    max_trials: Int. The maximum number of different Keras Models to try.
-      The search may finish before reaching the max_trials.
-    task: task type.
-  """
+      Train model from structured data, it will tune hparams automatically and do some nas searches, it will record training logs in a csv file.
+      Args:
+        max_trials: Int. The maximum number of different Keras Models to try.
+          The search may finish before reaching the max_trials.
+        task: task type.
+    """
 
     def __init__(self, max_trials, task):
         if task == REGRESSION:
@@ -20,12 +22,23 @@ class StructuredDataModel:
 
         else:
             raise NotImplemented
+        self.callbacks = [
+            tf.keras.callbacks.CSVLogger(
+                tf.io.gfile.join(self.model.directory, 'training_log.csv')),
+            tf.keras.callbacks.ProgbarLogger()
+        ]
 
-    def train(self, dataset, epochs=10):
-        return self.model.fit(
-            dataset,
-            epochs=epochs,
-            callbacks=[tf.keras.callbacks.CSVLogger(self.model.directory)])
+    def train(self, dataset, batch_size=8, epochs=10):
+        """
+          Args:
+            dataset: Train dataset, tf dataset format.
+            batch_size: Train batch size, integer.
+            epochs: Train loops, integer.
+        """
+        return self.model.fit(dataset,
+                              epochs=epochs,
+                              batch_size=batch_size,
+                              callbacks=self.callbacks)
 
     def evaluate(self, dataset):
         return self.model.evaluate(dataset)
