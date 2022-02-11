@@ -11,4 +11,4 @@
 4. 运行 `minikube service hello-test-np-service` 会自动跳转的浏览器页面, 如果返回结果说明正常
 
 ps: [如何启用本地镜像](https://medium.com/swlh/how-to-run-locally-built-docker-images-in-kubernetes-b28fbc32cc1d)
-在build本地镜像后, 输入`eval $(minikube -p minikube docker-env)`, 后在进行apply, 查看`kubectl get pods`观察pods状态, 如果为`running`说明运行成功, 如果为`ErrImageNeverPull`为失败.
+在build本地镜像后, 输入`eval $(minikube -p minikube docker-env)`, 后在进行apply, 查看`kubectl get pods`观察pods状态, 如果为`running`说明运行成功, 如果为`ErrImageNeverPull`为失败. 
