@@ -1,0 +1,22 @@
+{
+  "name": "automl",
+  "private": true,
+  "version": "0.0.0",
+  "description": "AutoML",
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ml-for-good/automl.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ml-for-good/automl/issues"
+  },
+  "homepage": "https://github.com/ml-for-good/automl#readme",
+  "devDependencies": {
+    "husky": "7.0.4",
+    "lint-staged": "12.3.3"
+  }
+}

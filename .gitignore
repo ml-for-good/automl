@@ -1,0 +1,12 @@
+.DS_Store
+
+.husky/_
+
+node_modules
+dist
+dist-ssr
+
+.eslintcache
+
+*.local
+*.log
