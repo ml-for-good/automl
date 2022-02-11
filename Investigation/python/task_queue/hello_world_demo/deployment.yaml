@@ -14,7 +14,13 @@ spec:
     spec:
       containers:
       - name: hello-test
-        image: h2222/hello_world_service # docker hub上上传的镜像:https://hub.docker.com/repository/docker/h2222/hello_world_service
+        # 两种加载镜像的方式
+        # 1. dockerhup上下载
+        # docker hub上上传的镜像:https://hub.docker.com/repository/docker/h2222/hello_world_service
+        # image: h2222/hello_world_service 
+        # 2. 加载本地镜像(如果使用本地镜像, 需要线创建本地镜像, docker build . -t name , 其中 . 为含有Dockerfile的路径, name为镜像名称), 并且需要设置参数: imagePullPolicy: Never
+        image: localhost/hello-test
+        imagePullPolicy: Never
         resources:
           limits:
             memory: "128Mi"
