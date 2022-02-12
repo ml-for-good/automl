@@ -10,6 +10,7 @@ class Dataloader:
 
     @staticmethod
     def _decode_image(feat, image_size):
+        """Decode image from jpeg, png, bmp, gif, webp"""
         if tf.strings.regex_full_match(feat, '.*(\.jpe?g|\.png|\.bmp)$'):
             contents = tf.io.read_file(feat)
             images = tf.image.decode_image(contents,
@@ -24,11 +25,13 @@ class Dataloader:
             contents = tf.io.read_file(feat)
             images = tfio.image.decode_webp(contents)
             feat = tf.image.resize(images, image_size)
-
-        return tf.as_string(feat)
+        else:
+            feat = tf.zeros(image_size, dtype=tf.uint8)
+        return feat
 
     @classmethod
     def _text_map_fn(cls, feature, label):
+        """Cast all csv values to string format"""
         result = []
         for feat in feature.values():
             if feat.dtype != tf.string:
@@ -90,7 +93,7 @@ class Dataloader:
                 select_columns=select_cols,
                 prefetch_buffer_size=64,
                 ignore_errors=True)
-
+            # cache dataset in a directory
             if cache_dir:
                 dataset = dataset.cache(cache_dir)
             if task == TEXT:
@@ -99,6 +102,7 @@ class Dataloader:
                 map_fn = cls._image_map_fn
             else:
                 raise NotImplemented
+            # Set dataset optimize options
             options = tf.data.Options()
             options.experimental_optimization.map_parallelization = True
             options.experimental_optimization.parallel_batch = True
