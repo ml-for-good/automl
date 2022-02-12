@@ -20,11 +20,3 @@ class DataloaderTest(tf.test.TestCase):
         tf.nest.map_structure(
             lambda spec, target: self.assertTrue(spec.is_compatible_with(
                 target)), test_dataset.element_spec, specs)
-
-        clf = ak.StructuredDataClassifier(overwrite=True, max_trials=3)
-        clf.fit(
-            train_dataset,
-            epochs=10,
-            callbacks=[tf.keras.callbacks.TensorBoard()],
-        )
-        clf.evaluate(test_dataset)

@@ -28,7 +28,6 @@ class Dataloader:
         return tf.as_string(feat)
 
     @classmethod
-    @tf.autograph.experimental.do_not_convert
     def _text_map_fn(cls, feature, label):
         result = []
         for feat in feature.values():
@@ -80,25 +79,17 @@ class Dataloader:
             column_defaults = None
 
         def _get_dataset(file_pattern, shuffle=True):
-            filenames = tf.io.gfile.glob(file_pattern)
-            dataset = None
-            for filename in filenames:
-                with tf.io.gfile.GFile(filename, 'rb') as file:
-                    new_dataset = tf.data.experimental.make_csv_dataset(
-                        filename,
-                        batch_size,
-                        shuffle=shuffle,
-                        num_parallel_reads=multiprocessing.cpu_count() // 2,
-                        label_name=label_name,
-                        column_defaults=column_defaults,
-                        field_delim=delimiter,
-                        select_columns=select_cols,
-                        prefetch_buffer_size=64,
-                        ignore_errors=True)
-                    if isinstance(dataset, tf.data.Dataset):
-                        dataset = dataset.concatenate(new_dataset)
-                    elif dataset is None:
-                        dataset = new_dataset
+            dataset = tf.data.experimental.make_csv_dataset(
+                file_pattern,
+                batch_size,
+                shuffle=shuffle,
+                num_parallel_reads=multiprocessing.cpu_count() // 2,
+                label_name=label_name,
+                column_defaults=column_defaults,
+                field_delim=delimiter,
+                select_columns=select_cols,
+                prefetch_buffer_size=64,
+                ignore_errors=True)
 
             if cache_dir:
                 dataset = dataset.cache(cache_dir)
