@@ -1,10 +1,9 @@
 import os
 
 from celery import Celery
-from flask import Flask, jsonify, flash, request, redirect, url_for
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from minio import Minio
-from minio.error import S3Error
 from werkzeug.utils import secure_filename
 
 
@@ -25,12 +24,24 @@ print(f"Authorized broker url: { format(celery.conf.broker_url) } ")
 
 @app.route("/")
 def index():
-    api_root = {"versions": {"values": [{"id": "v0",
-        "links": [{"href": "v0/", "rel": "self"}],
-        "media-types": [{"base": "application/json",
-        "type": "application/vnd.automl.api-v0+json"}],
-        "status": "dev",
-        "updated": "2022-02-12T00:00:00Z"}]}}
+    api_root = {
+        "versions": {
+            "values": [
+                {
+                    "id": "v0",
+                    "links": [{"href": "v0/", "rel": "self"}],
+                    "media-types": [
+                        {
+                            "base": "application/json",
+                            "type": "application/vnd.automl.api-v0 json",
+                        }
+                    ],
+                    "status": "dev",
+                    "updated": "2022-02-12T00:00:00Z",
+                }
+            ]
+        }
+    }
     return jsonify(api_root)
 
 
@@ -40,7 +51,6 @@ def upload_file():
     filename = secure_filename(file.filename)
     filepath = os.path.join(data_volume_path, filename)
     file.save(filepath)
-    upload_oss.apply
     upload_oss.apply_async(args=(filepath, filename))
     return jsonify(filepath=filepath, filename=filename)
 
@@ -68,7 +78,6 @@ def upload_oss(file_path, file_name):
     print(
         f"'{ file_path }' is successfully uploaded as "
         f"object '{ file_name }' to bucket ' { bucket_name }'. "
-        f"celery_broker_url: { CeleryConfig.celery_broker_url }"
     )
 
 
