@@ -4,9 +4,34 @@ import tensorflow as tf
 REGRESSION = 'regression'
 CLASSIFICATION = 'classification'
 
+SAVED_MODEL = 'saved_model'
+TFTRT = 'tftrt'
+TFLITE = 'tflite'
+ONNX = 'onnx'
+
 
 class StructuredDataModel:
     """
+      Work flow:
+       ┌───────────────┐
+       │ Make datasets │
+       └───────┬───────┘
+               │
+       ┌───────▼───────┐
+       │ Train model   │
+       └───────┬───────┘
+               │
+       ┌───────▼────────┐
+       │ Evaluate model │
+       └───────┬────────┘
+               │
+      ┌────────▼──────────┐
+      │ Export best model │
+      └────────┬──────────┘
+               │
+        ┌──────▼────────┐          ▼
+        │ Serving model │
+        └───────────────┘
       Train model from structured data, it will tune hparams automatically and do some nas searches, it will record training logs in a csv file.
       Args:
         max_trials: Int. The maximum number of different Keras Models to try.
@@ -42,6 +67,13 @@ class StructuredDataModel:
 
     def evaluate(self, dataset):
         return self.model.evaluate(dataset)
+
+    def export(self, format=SAVED_MODEL):
+        if format==SAVED_MODEL:
+          model = self.model.export_model()
+          tf.saved_model.save(model, tf.io.gfile.join(self.model.directory, 'saved_model'))
+        else:
+          raise NotImplemented
 
 
 class TextModel:
