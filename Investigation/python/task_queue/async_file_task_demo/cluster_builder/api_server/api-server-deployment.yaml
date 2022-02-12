@@ -1,0 +1,56 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: uploadvolume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: async-upload
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: async-upload
+  template:
+    metadata:
+      labels:
+        app: async-upload
+    spec:
+      containers:
+      - name: async-upload
+        image: async-upload
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8040
+        volumeMounts:
+          - mountPath: "/data"
+            name: uploadvolume
+      volumes:
+      - name: uploadvolume
+        persistentVolumeClaim:
+          claimName: uploadvolume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: async-upload-np-service
+spec:
+  selector:
+    app: async-upload
+  type: NodePort
+  ports:
+  - port: 8040
+    targetPort: 8040
+    nodePort: 30080
