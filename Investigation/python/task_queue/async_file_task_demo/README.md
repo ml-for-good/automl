@@ -1,12 +1,9 @@
-> This PoC is based on the auto scaling fork(a great job), just to enable a file upload to be asyc done via the celery worker, where a shared data volume was used.
+> This PoC is forked from/based on the auto scaling demo(a great job) and just to enable a file upload to be asyc done via the celery worker, where a shared data volume was used.
 
 ```
 
    POST /upload_as
    -F "file=@test.txt"
-                        │
-                        │
-                        │
                         │
                         │
   WSGI (flask)          │
@@ -23,9 +20,8 @@
  │                                                           │ │              │              │
  └───────────────────────────────────────────────────────────┘ │              │              │
                                                                │              │              │
-  Message Bus(rabbit)                                          │              │              │
  ┌─────────────────────────────────────────────────────────────▼──────────┐   │              │
- │                                                                        │   │              │
+ │ Message Bus(rabbit)                                                    │   │              │
  │                                                                        │   │              │
  └─────────────────────────────┬──────────────────────────────────────────┘   │              │
                                │                                              │              │
@@ -60,8 +56,8 @@
 minikube stop && minikube start --memory 3000 --insecure-registry localhost:5000
 minikube addons enable heapster
 eval $(minikube docker-env)
-cd api_async_upload && docker build . -t async-upload
-cd celery_worker && docker build . -t celery-worker
+cd api_async_upload && docker build . -t async-upload && cd ..
+cd celery_worker && docker build . -t celery-worker && cd ..
 kubectl create -f cluster_builder/rabbitmq/rabbitmq-controller.yaml
 kubectl create -f cluster_builder/rabbitmq/rabbitmq-service.yaml
 kubectl create -f cluster_builder/celery/celery-deployment.yaml
@@ -96,8 +92,6 @@ $ curl http://127.0.0.1:50588/upload_async -F "file=@$HOME/Downloads/test.txt"
   "filepath": "/data/test.txt"
 }
 ```
-
-
 
 然后可以去公共的 minio 试玩地址，文件被传上去了：https://play.min.io:9443/buckets/ml4good/browse
 
