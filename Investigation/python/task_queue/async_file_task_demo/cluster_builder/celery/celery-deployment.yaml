@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-controller
+  labels:
+    component: celery
+spec:
+  selector:
+    matchLabels:
+      app: taskQueue
+      component: celery
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: taskQueue
+        component: celery
+    spec:
+      containers:
+      - name: worker
+        image: celery-worker
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5672
+        volumeMounts:
+          - mountPath: "/data"
+            name: uploadvolume
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      volumes:
+      - name: uploadvolume
+        persistentVolumeClaim:
+          claimName: uploadvolume
