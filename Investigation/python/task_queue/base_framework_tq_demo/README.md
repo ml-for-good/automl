@@ -1,8 +1,9 @@
 ## 基于flask-restful和celery(未实现)的机器学习服务框架(demo)
 
 ### run
-1. `pip install -r requirement.txt`
-2. `python app.py`
+0. 安装docker
+1. `docker build . -t app_service`
+2. `docker run -it -p 8030:8030 app_service`, 后台启动+ `-d`
 
 ### 测试
 `curl -X POST -d '{"name":"h2222"}' http://127.0.0.1:8030/tq`
