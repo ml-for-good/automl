@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"os"
+
 	"github.com/RichardKnop/machinery/v1"
 	mchConf "github.com/RichardKnop/machinery/v1/config"
 	"github.com/RichardKnop/machinery/v1/log"
@@ -20,10 +22,11 @@ func init() {
 }
 
 func NewTaskCenter() (*machinery.Server, error) {
+	redisServer := os.Getenv("REDIS_SERVER")
 	cnf := &mchConf.Config{
-		Broker:        "redis://localhost:6379",
+		Broker:        "redis://" + redisServer,
 		DefaultQueue:  "ServerTasksQueue",
-		ResultBackend: "redis://localhost:6379",
+		ResultBackend: "redis://" + redisServer,
 	}
 	// Create server instance
 	server, err := machinery.NewServer(cnf)
