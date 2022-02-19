@@ -1,0 +1,14 @@
+[
+    {
+        "name": "feature_processor",
+        "conf":{
+            "delay": 3
+        }
+    },
+    {
+        "name": "model_predictor",
+        "conf":{
+            "delay": 2
+        }
+    }
+]

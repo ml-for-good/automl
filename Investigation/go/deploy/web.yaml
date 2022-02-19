@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-web
+  labels:
+    k8s-app: go-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: go-web
+  template:
+    metadata:
+      labels:
+        k8s-app: go-web
+    spec:
+      containers:
+      - name: go-web
+        image: zhaoyunpeng/go-worker:v2
+        ports:
+        - containerPort: 9000
+          name: go-web
+          protocol: TCP
+        command: ["go"]
+        args: ["run", "http_server.go"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-web
+  labels:
+    k8s-app: go-web
+spec:
+  selector:
+    k8s-app: go-web
+  ports:
+  - name: go-web
+    port: 9000
+    protocol: TCP
+    targetPort: 9000
+    nodePort: 31080
+  type: NodePort

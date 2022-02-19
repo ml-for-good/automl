@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-worker
+  labels:
+    k8s-app: go-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: go-worker
+  template:
+    metadata:
+      labels:
+        k8s-app: go-worker
+    spec:
+      containers:
+      - name: worker
+        image: zhaoyunpeng/go-worker:v2
+        imagePullPolicy: Always
+        env:
+        - name: REDIS_SERVER
+          value: "go-redis:6379/0"
+        command: ["go"]
+        args: ["run", "worker_server.go"]
+        resources:
+          limits:
+            cpu: 100m
+          requests:
+            cpu: 60m
