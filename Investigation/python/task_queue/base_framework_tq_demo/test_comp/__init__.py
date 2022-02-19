@@ -1,0 +1,2 @@
+from test_comp.test_comp_1 import FeatureProcessor
+from test_comp.test_comp_2 import ModelPredictor
