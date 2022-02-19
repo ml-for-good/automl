@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-redis
+  labels:
+    k8s-app: go-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: go-redis
+  template:
+    metadata:
+      labels:
+        k8s-app: go-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        command: ["redis-server"]
+        ports:
+        - containerPort: 6379
+          name: server
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-redis
+  labels:
+    k8s-app: go-redis
+spec:
+  selector:
+    k8s-app: go-redis
+  ports:
+  - name: server
+    port: 6379
+    protocol: TCP
