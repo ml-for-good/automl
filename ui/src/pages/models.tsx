@@ -96,7 +96,7 @@ ProjectCard.propTypes = {
   }).isRequired,
 }
 
-export const Home = () => {
+export const Models = () => {
   const [statusValue, setStatusValue] = useState('')
 
   const handleStatusChange = (event: ChangeEvent<HTMLInputElement>) => {
