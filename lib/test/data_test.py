@@ -1,5 +1,5 @@
 import tensorflow as tf
-import data
+from lib import data
 
 
 class DataloaderTest(tf.test.TestCase):

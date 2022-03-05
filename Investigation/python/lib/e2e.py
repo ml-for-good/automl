@@ -15,7 +15,8 @@ def main(_):
     test_data_url = "https://storage.googleapis.com/tf-datasets/titanic/eval.csv"
     logging.info('Load CSV dataset')
     if FLAGS.profile:
-      tf.profiler.experimental.start('./profile')
+        tf.profiler.experimental.start('./profile')
+    # Load data from csv files as tensorflow datasets
     train_dataset, test_dataset = data.Dataloader.from_csv(
         train_data_url,
         test_data_url,
@@ -23,6 +24,7 @@ def main(_):
         cache_dir=None,
         batch_size=2)
     logging.info('Build a classifier model')
+    # Init a structured data classification model
     clf = model.StructuredDataModel(3, model.CLASSIFICATION)
     logging.info('Start training')
     clf.train(
@@ -32,10 +34,11 @@ def main(_):
         epochs=10,
     )
     if FLAGS.profile:
-      tf.profiler.experimental.stop()
+        tf.profiler.experimental.stop()
     logging.info('Start evaluating')
     # Take top 100 samples for evaluate test
     clf.evaluate(test_dataset.take(100))
+    clf.export()
 
 
 if __name__ == "__main__":

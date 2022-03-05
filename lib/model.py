@@ -69,11 +69,19 @@ class StructuredDataModel:
         return self.model.evaluate(dataset)
 
     def export(self, format=SAVED_MODEL):
-        if format==SAVED_MODEL:
-          model = self.model.export_model()
-          tf.saved_model.save(model, tf.io.gfile.join(self.model.directory, 'saved_model'))
+        model = self.model.export_model()
+        if format == SAVED_MODEL:
+            tf.saved_model.save(
+                model, tf.io.gfile.join(self.model.directory, 'saved_model'))
+        elif format == TFLITE:
+            converter = tf.lite.TFLiteConverter.from_keras_model(model)
+            converter.optimizations = {tf.lite.Optimize.DEFAULT}
+            tflite_model = converter.convert()
+            tf.io.write_file(
+                tf.io.gfile.join(self.model.directory, 'model.tflite'),
+                tflite_model)
         else:
-          raise NotImplemented
+            raise NotImplemented
 
 
 class TextModel:
