@@ -29,3 +29,6 @@
 5. [comp1.process, comp2.process, comp3.process]
 6. result
 ```
+
+## 更新
+2022-03-06: 加入配置文件reload的功能
