@@ -56,7 +56,9 @@ paths:
           schema:
             type: "string"
         "400":
-          description: "Invalid username/password supplied"
+          description: "user_id not found"
+        "401":
+          description: "Unauthorized: wrong password supplied"
   /dataset:
     post:
       tags:
