@@ -1,0 +1,1 @@
+package com.automl.data.mysql.entity;import com.baomidou.mybatisplus.annotation.TableName;import lombok.Data;/** * @auther kayc * @date 2022/3/13 8:11 PM */@TableName("automl_test")@Datapublic class AutomlTest {  private int id;  private String name;}

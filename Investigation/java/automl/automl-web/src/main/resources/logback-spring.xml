@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+  <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
+    <encoder>
+      <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{12} %msg%rEx{full,
+        java.lang.Thread,
+        sun.reflect,
+        org.springframework,
+        org.apache,
+        java.net,
+        java.io,
+        javax.servlet,
+        org.junit,
+        com.mysql,
+        com.sun,
+        org.mybatis,
+        org.mybatis.spring,
+        org.apache.ibatis,
+        java.util.concurrent,
+        mybatis.mapper.isp
+        java.sql
+        }%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
+    <encoder>
+      <pattern>%d{HH:mm:ss} [%thread] %-5level %logger{12} %msg%rEx{full,
+        java.lang.Thread,
+        sun.reflect,
+        org.springframework,
+        org.apache,
+        java.net,
+        java.io,
+        javax.servlet,
+        org.junit,
+        com.mysql,
+        com.sun,
+        org.mybatis,
+        org.mybatis.spring,
+        org.apache.ibatis,
+        java.util.concurrent,
+        com.talkingdata.dataplatform,
+        com.talkingdata.dataplatform.isp.mapper,
+        mybatis.mapper.isp
+        java.sql
+        }%n
+      </pattern>
+    </encoder>
+    <file>logs/service.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>logs/%d{yyyy-MM-dd}.service.log</fileNamePattern>
+      <!-- keep 30 days' worth of history -->
+      <maxHistory>31</maxHistory>
+      <!--<maxFileSize>4GB</maxFileSize>-->
+      <!--<totalSizeCap>20GB</totalSizeCap>-->
+    </rollingPolicy>
+  </appender>
+
+  <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ERROR">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} [%class:%line] - %m%n</pattern>
+    </encoder>
+    <file>logs/error.log</file>
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>ERROR</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- daily rollover -->
+      <fileNamePattern>logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <!-- keep 30 days' worth of history -->
+      <maxHistory>7</maxHistory>
+      <!--<maxFileSize>1GB</maxFileSize>-->
+      <!--<totalSizeCap>5GB</totalSizeCap>-->
+    </rollingPolicy>
+  </appender>
+  <root level="INFO">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
+    <appender-ref ref="ERROR"/>
+  </root>
+</configuration>
+

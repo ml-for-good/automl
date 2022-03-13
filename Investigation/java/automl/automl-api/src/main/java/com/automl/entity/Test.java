@@ -1,0 +1,1 @@
+package com.automl.entity;import lombok.Data;/** * @auther kayc * @date 2022/3/13 3:11 PM */@Datapublic class Test {  private int id;  private String name;}
