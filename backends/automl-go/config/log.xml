@@ -1,0 +1,29 @@
+<seelog>
+    <outputs formatid="common">
+        <rollingfile type="size" filename="logs/roll.log" maxsize="300000000" maxrolls="5" />
+        <filter levels="info">
+            <rollingfile formatid="public" type="date" filename="./logs/public/public.log" datepattern="2006010215" maxrolls="96" />
+        </filter>
+        <filter levels="trace">
+            <rollingfile formatid="public" type="date" filename="./logs/public/public.log" datepattern="2006010215" maxrolls="96" />
+        </filter>
+        <filter levels="debug">
+            <rollingfile formatid="debug" type="date" filename="./logs/debug/debug.log" maxsize="300000000" maxrolls="3" />
+        </filter>
+        <filter levels="warn">
+            <rollingfile formatid="error" type="date" filename="./logs/error/warn.log" datepattern="2006010215" maxrolls="96" />
+        </filter>
+        <filter levels="error">
+            <rollingfile formatid="error" type="date" filename="./logs/error/error.log" datepattern="2006010215" maxrolls="96" />
+        </filter>
+    </outputs>
+    <formats>
+        <format id="common" format="%Date %Time%t[%LEVEL]%t%Msg%n" />
+        <format id="monitor" format="%LEVEL%t%Date %Time%t%Msg%n" />
+        <format id="public" format="%Msg%n" />
+        <format id="error" format="%Date %Time %Line %Msg%n" />
+        <format id="trace" format="%Msg%n" />
+    </formats>
+</seelog>
+
+
