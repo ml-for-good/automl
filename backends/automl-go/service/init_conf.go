@@ -45,7 +45,7 @@ func SetLog(log seelog.LoggerInterface) {
 }
 
 func InitConf() {
-	log, err := seelog.LoggerFromConfigAsFile("../config/log.xml")
+	log, err := seelog.LoggerFromConfigAsFile("../conf/log_conf.xml")
 	if err != nil {
 		panic("parse log file error")
 	}
@@ -57,11 +57,11 @@ func InitConf() {
 
 	var conf AutoMLConfig
 	conf.Server = server{}
-	err = ini.MapTo(&conf.Server, "../config/cfg.ini")
+	err = ini.MapTo(&conf.Server, "../conf/src_conf.ini")
 	if err != nil {
 		log.Error(err)
 		log.Flush()
-		panic("parse cfg.ini file error")
+		panic("parse src_conf.ini file error")
 	}
 	SetConf(conf)
 	return
