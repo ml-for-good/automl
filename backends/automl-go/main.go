@@ -1,16 +1,10 @@
-/*
- * @author: 宋先生～
- * @brief:
- * @date:
- */
-
 package main
 
 import (
-	"automl-go/httpd"
+	"automl-go/service"
 )
 
 func main() {
-	httpd.InitServer()
-	httpd.Start()
+	service.Init()
+	service.Start()
 }

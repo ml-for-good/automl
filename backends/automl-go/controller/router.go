@@ -1,5 +1,5 @@
 /**
- ** @brief 路由注册入口
+ ** @brief route registration entry
  ** @author 宋先生～
  ** @date 2022.03.07
 **/
@@ -10,7 +10,7 @@ import (
 )
 
 /**
- ** @brief  请求路由注册
+ ** @brief  regist route
  ** @param  router *gin.Engine
  ** @author 宋先生～
  ** @return 无

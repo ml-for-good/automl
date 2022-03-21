@@ -1,9 +1,5 @@
 /*
-* 以为蓝本https://github.com/tylerb/graceful/tree/v1.2.4
-* 改动点：
-* 	接收到kill信号后，主动释放端口，并clone进程在后台运行指定所有的连接都完成
-* 	注册全局信号量，统一管理
-* 	原代码信号量传输逻辑, 改造得更清晰可读
+* origin: https://github.com/tylerb/graceful/tree/v1.2.4
  */
 package components
 
@@ -72,17 +68,24 @@ type Server struct {
 	// connections holds all connections managed by graceful
 	connections map[net.Conn]struct{}
 
-	notifyShutdown chan bool
-	notifyDone     chan bool
-	notifyKill     chan bool
-	addr           string
+	// notify shut down channel
+	shutdownChan chan bool
+
+	// notify done channel
+	doneChan chan bool
+
+	// notify kill channel
+	killChan chan bool
+
+	// target address
+	addr string
 }
 
 // Run serves the http.Handler with graceful shutdown enabled.
 //
 // timeout is the duration to wait until killing active requests and stopping the server.
 // If timeout is 0, the server never times out. It waits for all active requests to finish.
-func GracefulRun(addr string, waitTimeout, readTimeout, writeTimeout time.Duration, n http.Handler) {
+func Run(addr string, waitTimeout, readTimeout, writeTimeout time.Duration, n http.Handler) {
 	srv := &Server{
 		Timeout: waitTimeout,
 		Server: &http.Server{
@@ -91,9 +94,9 @@ func GracefulRun(addr string, waitTimeout, readTimeout, writeTimeout time.Durati
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,
 		},
-		notifyShutdown: make(chan bool),
-		notifyDone:     make(chan bool),
-		notifyKill:     make(chan bool),
+		shutdownChan: make(chan bool),
+		doneChan:     make(chan bool),
+		killChan:     make(chan bool),
 	}
 
 	if err := srv.ListenAndServe(); err != nil {
@@ -233,15 +236,14 @@ func (srv *Server) Serve(listener net.Listener) error {
 
 	go srv.manageConnections(add, remove)
 
-	interruptSignal := RegisterInterruptSignal("graceful net", false) // 注册全局信号量
+	interruptSignal := RegisterInterruptSignal("graceful net", false)
 	go srv.handleInterrupt(interruptSignal, listener)
 
 	// Serve with graceful listener.
 	// Execution blocks here until listener.Close() is called, above.
 	err := srv.Server.Serve(listener)
-	log.Printf("Serve closed [err:%s]", err)
 
-	srv.shutdown(interruptSignal) // 最终结束
+	srv.shutdown(interruptSignal)
 
 	return err
 }
@@ -268,16 +270,16 @@ func (srv *Server) manageConnections(add, remove chan net.Conn) {
 		case conn := <-remove:
 			delete(srv.connections, conn)
 			if isDone && len(srv.connections) == 0 {
-				srv.notifyDone <- true
+				srv.doneChan <- true
 				return
 			}
-		case <-srv.notifyShutdown:
+		case <-srv.shutdownChan:
 			isDone = true
 			if len(srv.connections) == 0 {
-				srv.notifyDone <- true
+				srv.doneChan <- true
 				return
 			}
-		case <-srv.notifyKill:
+		case <-srv.killChan:
 			for k := range srv.connections {
 				_ = k.Close() // nothing to do here if it errors
 			}
@@ -286,27 +288,25 @@ func (srv *Server) manageConnections(add, remove chan net.Conn) {
 	}
 }
 
-func (srv *Server) handleInterrupt(interruptSignal *GlobalSignal, listener net.Listener) {
+func (srv *Server) handleInterrupt(interruptSignal *OverallSignal, listener net.Listener) {
 	(*interruptSignal).Wait()
 
-	err := listener.Close() // we are shutting down anyway. ignore error.
-	log.Printf("release listenner port[err:%s]", err)
+	listener.Close() // we are shutting down anyway. ignore error.
 	srv.SetKeepAlivesEnabled(false)
 }
 
-func (srv *Server) shutdown(interruptSignal *GlobalSignal) {
+func (srv *Server) shutdown(interruptSignal *OverallSignal) {
 	// Request done notification
-	srv.notifyShutdown <- true
-	log.Printf("[%s][shutdown begin][connections: %d][timeout: %d]", srv.Server.Addr, len(srv.connections), srv.Timeout)
+	srv.shutdownChan <- true
 
 	if srv.Timeout > 0 {
 		select {
-		case <-srv.notifyDone:
+		case <-srv.doneChan:
 		case <-time.After(srv.Timeout):
-			close(srv.notifyKill)
+			close(srv.killChan)
 		}
 	} else {
-		<-srv.notifyDone
+		<-srv.doneChan
 	}
 	// Close the stopChan to wake up any blocked goroutines.
 	srv.chanLock.Lock()
@@ -315,5 +315,4 @@ func (srv *Server) shutdown(interruptSignal *GlobalSignal) {
 	}
 	srv.chanLock.Unlock()
 	(*interruptSignal).Done()
-	log.Printf("[%s]shutdown success", srv.Server.Addr)
 }

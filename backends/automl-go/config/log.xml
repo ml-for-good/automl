@@ -2,19 +2,16 @@
     <outputs formatid="common">
         <rollingfile type="size" filename="logs/roll.log" maxsize="300000000" maxrolls="5" />
         <filter levels="info">
-            <rollingfile formatid="public" type="date" filename="./logs/public/public.log" datepattern="2006010215" maxrolls="96" />
-        </filter>
-        <filter levels="trace">
-            <rollingfile formatid="public" type="date" filename="./logs/public/public.log" datepattern="2006010215" maxrolls="96" />
+            <rollingfile formatid="public" type="date" filename="./logs/public/public.log" datepattern="2022030718" maxrolls="96" />
         </filter>
         <filter levels="debug">
-            <rollingfile formatid="debug" type="date" filename="./logs/debug/debug.log" maxsize="300000000" maxrolls="3" />
+            <rollingfile formatid="debug" type="date" filename="./logs/debug/debug.log" datepattern="2022030718" maxsize="100000000" maxrolls="3" />
         </filter>
         <filter levels="warn">
-            <rollingfile formatid="error" type="date" filename="./logs/error/warn.log" datepattern="2006010215" maxrolls="96" />
+            <rollingfile formatid="error" type="date" filename="./logs/error/warn.log" datepattern="2022030718" maxrolls="96" />
         </filter>
         <filter levels="error">
-            <rollingfile formatid="error" type="date" filename="./logs/error/error.log" datepattern="2006010215" maxrolls="96" />
+            <rollingfile formatid="error" type="date" filename="./logs/error/error.log" datepattern="2022030718" maxrolls="96" />
         </filter>
     </outputs>
     <formats>

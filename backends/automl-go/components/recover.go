@@ -1,6 +1,5 @@
 /*
- * 处理gin框架的内部异常
- * 定义了NewGo,集合了recover和go，统一处理异常
+ * Handle exceptions
  */
 package components
 
@@ -38,7 +37,7 @@ func RecoveryWithWriter(log seelog.LoggerInterface) gin.HandlerFunc {
 					stack := stack(3)
 					log.Errorf("Panic recovery -> %s\n%s\n", err, stack)
 				}
-				http.Error(c.Writer, "服务器内部错误", http.StatusInternalServerError)
+				http.Error(c.Writer, "service internal error", http.StatusInternalServerError)
 				c.Abort()
 
 			}
@@ -47,22 +46,15 @@ func RecoveryWithWriter(log seelog.LoggerInterface) gin.HandlerFunc {
 	}
 }
 
-/*
- * goroute默认注册全局信号量,
- * 防止主进程退出后，goroute还未完成
- *
- */
 func Go(params *map[string]interface{}, callback func(*map[string]interface{})) {
 	f := func(params *map[string]interface{}) {
 		funName := runtime.FuncForPC(reflect.ValueOf(callback).Pointer()).Name()
-		globalSignal := RegisterInterruptSignal(funName, true)
+		overallSignal := RegisterInterruptSignal(funName, true)
 		defer func() {
-			globalSignal.Done()
+			overallSignal.Done()
 			if err := recover(); err != nil {
 				stack := stack(3)
 				log.Printf("Panic recovery -> %s\n%s\n", err, stack)
-				// TODO
-				// 发送堆栈信息邮件至Admin
 			}
 		}()
 		callback(params)
