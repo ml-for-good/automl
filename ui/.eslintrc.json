@@ -30,6 +30,8 @@
     "arrow-parens": ["error", "as-needed"],
     "import/extensions": ["error", "never"],
     "quotes": ["error", "single"],
-    "jsx-quotes": ["error", "prefer-double"]
+    "jsx-quotes": ["error", "prefer-double"],
+    "indent": ["error", 2],
+    "linebreak-style": ["error", "unix"]
   }
 }
