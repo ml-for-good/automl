@@ -12,8 +12,8 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.1
 externalDocs:
-  description: Please copy the whole content of this yaml file into the site below to preview it
-  url: https://editor.swagger.io/
+  description: Find out more about Swagger
+  url: http://swagger.io
 servers:
 - url: https://development.example.com/v1
   description: Development server
@@ -21,12 +21,14 @@ servers:
   description: Staging server
 - url: https://api.example.com/v1
   description: Production server
+security:
+  - oauth2:
+      - self
 tags:
-- name: Authentication
-  description: API Schema of AutoML
+- name: "User"
+  description: "Operations about user"
   externalDocs:
-    description: Find out more about AutoML
-    url: http://swagger.io
+    url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
 - name: Namespaces
   description: provides namespace level isolation
 - name: Dataset Management
@@ -41,10 +43,85 @@ tags:
 - name: Predict
   description: Operations about Prediction
 paths:
+  /user:
+    get:
+      tags:
+      - User
+      summary: Return authenticated user's model
+      responses:
+        200:
+          description: |
+            The authenticated user's model is returned
+            with additional information about the permissions associated with the request token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestIdentity"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:users:activity
+            - read:roles:users
+            - admin:auth_state
+  /users:
+    get:
+      tags:
+      - User
+      summary: List users
+      responses:
+        200:
+          description: The Hub's user list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:users:activity
+            - read:roles:users
+            - admin:auth_state
+    post:
+      summary: Create multiple users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usernames:
+                  type: array
+                  description: list of usernames to create on the Hub
+                  items:
+                    type: string
+                admin:
+                  type: boolean
+                  description: whether the created users should be admins
+        required: true
+      responses:
+        201:
+          description: The users have been created
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The created users
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+      x-codegen-request-body-name: body
   /automl/login:
     post:
       tags:
-      - Authentication
+      - User
       summary: Login to AutoML
       operationId: login
       requestBody:
@@ -538,7 +615,80 @@ components:
           type: string
         message:
           type: string
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The user's name
+        admin:
+          type: boolean
+          description: Whether the user is an admin
+        roles:
+          type: array
+          description: The names of roles this user has
+          items:
+            type: string
+        groups:
+          type: array
+          description: The names of groups where this user is a member
+          items:
+            type: string
+        pending:
+          type: string
+          description: The currently pending action, if any
+          enum:
+            - spawn
+            - stop
+        last_activity:
+          type: string
+          description: Timestamp of last-seen activity from the user
+          format: date-time
+        auth_state:
+          type: object
+          properties: {}
+          description: |
+            Authentication state of the user. Only available with admin:users:auth_state
+            scope. None otherwise.
+    RequestIdentity:
+      description: |
+        The model for the entity making the request.
+        Extends User model to add information about the specific credentials (e.g. session).
+      allOf:
+        - type: object
+          oneOf:
+            - $ref: "#/components/schemas/User"
+          discriminator:
+            propertyName: kind
+            mapping:
+              user: "#/components/schemas/User"
+        - type: object
+          properties:
+            session_id:
+              type: string
+              nullable: true
+              description: |
+                The session id associated with the request's OAuth token, if any.
+                null, if the request token not associated with a session id.
+
+                Added in 2.0.
+            scopes:
+              type: array
+              description: |
+                The list of all expanded scopes the request credentials have access to.
+
+                Added in 2.0.
+              items:
+                type: string
+              example:
+                - "read:users"
   parameters:
+    access_token:
+      description: OAuth access token.
+      in: query
+      name: access_token
+      schema:
+        type: string
     limit:
       name: limit
       in: query
@@ -577,15 +727,45 @@ components:
           schema:
             $ref: '#/components/schemas/GeneralError'
   securitySchemes:
-    petstore_auth:
+    oauth2:
       type: oauth2
       flows:
-        implicit:
-          authorizationUrl: http://example.org/api/oauth/dialog
+        authorizationCode:
+          authorizationUrl: https://hub.example/hub/api/oauth2/authorize
+          tokenUrl: https://hub.example/hub/api/oauth2/token
           scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+            (reference): https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+            (reference2): https://jupyterhub.readthedocs.io/en/stable/rbac/index.html
+            self:
+              The user’s own resources
+            all:
+              Contains all available scopes and grants full rights to all actions. 
+            admin-ui:
+              Access the admin page. Permission to take actions via the admin
+              page granted separately.
+            admin:users:
+              Read, write, create and delete users and their authentication
+              state.
+            admin:auth_state: Read a user’s authentication state.
+            users:
+              Read and write permissions to user models (excluding authentication state).
+            delete:users: Delete users.
+            list:users: List users, including at least their names.
+            read:users:
+              Read user models (excluding authentication state).
+            read:users:name: Read names of users.
+            read:users:groups: Read users’ group membership.
+            read:users:activity: Read time of last user activity.
+            read:roles: Read role assignments.
+            read:roles:users: Read user role assignments.
+            read:roles:groups: Read group role assignments.
+            users:activity: Update time of last user activity.
+            admin:groups: Read and write group information, create and delete groups.
+            groups:
+              Read and write group information, including adding/removing users
+              to/from groups.
+            list:groups: List groups, including at least their names.
+            read:groups: Read group models.
+            read:groups:name: Read group names.
+            delete:groups: Delete groups.
+            read:metrics: Read prometheus metrics.
