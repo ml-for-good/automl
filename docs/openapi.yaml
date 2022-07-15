@@ -62,7 +62,6 @@ paths:
             - read:users
             - read:users:name
             - read:users:groups
-            - read:users:activity
             - read:roles:users
             - admin:auth_state
   /users:
@@ -84,7 +83,6 @@ paths:
             - read:users
             - read:users:name
             - read:users:groups
-            - read:users:activity
             - read:roles:users
             - admin:auth_state
     post:
@@ -640,10 +638,6 @@ components:
           enum:
             - spawn
             - stop
-        last_activity:
-          type: string
-          description: Timestamp of last-seen activity from the user
-          format: date-time
         auth_state:
           type: object
           properties: {}
@@ -734,15 +728,13 @@ components:
           authorizationUrl: https://hub.example/hub/api/oauth2/authorize
           tokenUrl: https://hub.example/hub/api/oauth2/token
           scopes:
-            (reference): https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
-            (reference2): https://jupyterhub.readthedocs.io/en/stable/rbac/index.html
+            (openapi-reference): https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+            (rbac-reference): https://jupyterhub.readthedocs.io/en/stable/rbac/index.html
+            (scope-reference): https://jupyterhub.readthedocs.io/en/stable/rbac/scopes.html
             self:
               The user’s own resources
             all:
               Contains all available scopes and grants full rights to all actions. 
-            admin-ui:
-              Access the admin page. Permission to take actions via the admin
-              page granted separately.
             admin:users:
               Read, write, create and delete users and their authentication
               state.
@@ -755,14 +747,11 @@ components:
               Read user models (excluding authentication state).
             read:users:name: Read names of users.
             read:users:groups: Read users’ group membership.
-            read:users:activity: Read time of last user activity.
             read:roles: Read role assignments.
             read:roles:users: Read user role assignments.
             read:roles:groups: Read group role assignments.
-            users:activity: Update time of last user activity.
             admin:groups: Read and write group information, create and delete groups.
-            groups:
-              Read and write group information, including adding/removing users
+            groups: Read and write group information, including adding/removing users
               to/from groups.
             list:groups: List groups, including at least their names.
             read:groups: Read group models.
