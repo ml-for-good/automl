@@ -17,6 +17,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "noImplicitAny": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "types": ["vite-plugin-svgr/client"]
