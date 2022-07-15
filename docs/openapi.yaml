@@ -1,0 +1,591 @@
+openapi: 3.0.1
+info:
+  title: AutoML
+  description: 'We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.'
+  termsOfService: http://example.com/terms/
+  contact:
+    name: API Support
+    url: http://www.example.com/support
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+externalDocs:
+  description: Please copy the whole content of this yaml file into the site below to preview it
+  url: https://editor.swagger.io/
+servers:
+- url: https://development.example.com/v1
+  description: Development server
+- url: https://staging.example.com/v1
+  description: Staging server
+- url: https://api.example.com/v1
+  description: Production server
+tags:
+- name: Authentication
+  description: API Schema of AutoML
+  externalDocs:
+    description: Find out more about AutoML
+    url: http://swagger.io
+- name: Namespaces
+  description: provides namespace level isolation
+- name: Dataset Management
+  description: Management of Dataset
+- name: Train
+  description: Operations about Training
+- name: Evaluate
+  description: Operations about Evaluation
+  externalDocs:
+    description: Find out more about AutoML
+    url: http://swagger.io
+- name: Predict
+  description: Operations about Prediction
+paths:
+  /automl/login:
+    post:
+      tags:
+      - Authentication
+      summary: Login to AutoML
+      operationId: login
+      requestBody:
+        description: Login Credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        400:
+          description: Invalid username/password supplied
+          content: {}
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorModel'
+      x-codegen-request-body-name: body
+  /namespaces/{namespace}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    put:
+      operationId: putNamespace
+      summary: Create a namespace
+      description: Creates a new namespace object. A namespace enables the contextual grouping of related jobs and datasets. Namespaces must contain only letters (`a-z`, `A-Z`), numbers (`0-9`), underscores (`_`), dashes (`-`), colons (`:`), slashes (`/`), or dots (`.`). A namespace is case-insensitive with a maximum length of `1024` characters. Note jobs and datasets will be unique within a namespace, but not across namespaces.
+      tags:
+        - Namespaces
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatedNamespace'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namespace'
+    get:
+      operationId: getNamespace
+      summary: Retrieve a namespace
+      description: Returns a namespace.
+      tags:
+        - Namespaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namespace'
+  /namespaces:
+    get:
+      operationId: getNamespaces
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      summary: List all namespaces
+      description: Returns a list of namespaces.
+      tags:
+        - Namespaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NamespaceList'
+  /dataset:
+    get:
+      tags:
+      - Dataset Management
+      summary: Query dataset info
+      description: Query Dataset Info
+      operationId: query_dataset_info
+      parameters:
+      - name: dataset_id
+        in: query
+        description: Dataset Id to query by
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSetInfoResponse'
+        400:
+          description: Invalid dataset id value
+          content: {}
+    post:
+      tags:
+      - Dataset Management
+      summary: Upload a Dataset
+      operationId: upload_a_dataset
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: successful operation
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadDatasetResponse'
+        400:
+          description: Invalid dataset supplied
+          content: {}
+    delete:
+      tags:
+      - Dataset Management
+      summary: Delete Dataset by Dataset Id
+      operationId: delete_dataset_by_id
+      parameters:
+      - name: dataset_id
+        in: query
+        description: Dataset Set Id that will be deleted
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content: {}
+        400:
+          description: Invalid dataset id value
+          content: {} 
+  /train/job:
+    get:
+      tags:
+      - Train
+      summary: Get the status of a training job
+      description: Get the status of a training job
+      operationId: get_training_job_status
+      parameters:
+      - name: train_job_id
+        in: query
+        description: Get a training job info
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainJobStatus'
+        400:
+          description: Invalid Params
+          content: {}
+    post:
+      tags:
+      - Train
+      summary: Train a dataset by selecting columns
+      description: Train a dataset by selecting columns
+      operationId: create_training_job
+      requestBody:
+        description: Start a training by selecting columns of a datset.
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/TrainJobInfoRequest'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainJobInfoResponse'
+        400:
+          description: Invalid Params
+          content: {}
+      x-codegen-request-body-name: train_job_info
+  /evaluation:
+    get:
+      tags:
+      - Evaluate
+      summary: Get the Evaluation Result
+      description: Get the Evaluation Result
+      operationId: get_evaluation_res
+      parameters:
+      - name: evaluation_job_id
+        in: query
+        description: Evaluation Job ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationJobResult'
+        400:
+          description: invalid param
+          content: {}
+    post:
+      tags:
+      - Evaluate
+      summary: Evaluate the ML model
+      description: Evaluate the ML model
+      operationId: evaluate_ml_model
+      parameters:
+      - name: ml_model_id
+        in: query
+        description: ML Model Id
+        required: true
+        schema:
+          type: integer
+      - name: evaluation_dataset_id
+        in: query
+        description: evaluation_dataset_id
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationJobInfo'
+        400:
+          description: invalid params
+          content: {}
+  /prediction:
+    get:
+      tags:
+      - Predict
+      summary: Get the Prediction Result
+      description: Get the Prediction Result
+      operationId: get_prediction_res
+      parameters:
+      - name: prediction_job_id
+        in: query
+        description: Prediction Job ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionJobResult'
+        400:
+          description: invalid param
+          content: {}
+    post:
+      tags:
+      - Predict
+      summary: Prediction by the ML model
+      description: Prediction by the ML model
+      operationId: predict_by_ml_model
+      parameters:
+      - name: ml_model_id
+        in: query
+        description: ML Model Id
+        required: true
+        schema:
+          type: integer
+      - name: prediction_dataset_id
+        in: query
+        description: prediction_dataset_id
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionJobInfo'
+        400:
+          description: invalid params
+          content: {}
+components:
+  schemas:
+    CreatedNamespace:
+      type: object
+      properties:
+        ownerName:
+          description: The owner of the namespace.
+          type: string
+        description:
+          description: The description of the namespace.
+          type: string
+      required:
+        - ownerName
+      example:
+        ownerName: me
+        description: My first namespace!
+    Namespace:
+      type: object
+      properties:
+        name:
+          description: The name of the namespace.
+          type: string
+        createdAt:
+          description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was created.
+          type: string
+          format: date-time
+        updatedAt:
+          description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was updated.
+          type: string
+          format: date-time
+        ownerName:
+          description: The owner of the namespace.
+          type: string
+        description:
+          description: The description of the namespace.
+          type: string
+      example:
+        name: my-namespace
+        createdAt: '2019-05-09T19:49:24.201361Z'
+        updatedAt: '2019-05-09T19:49:24.201361Z'
+        ownerName: me
+        description: My first namespace!
+    NamespaceList:
+      type: object
+      properties:
+        namespaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Namespace'
+    GeneralError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    ErrorModel:
+      type: object
+      required:
+      - message
+      - code
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          minimum: 100
+          maximum: 600
+    ExtendedErrorModel:
+      allOf:
+      - $ref: '#/components/schemas/ErrorModel'
+      - type: object
+        required:
+        - rootCause
+        properties:
+          rootCause:
+            type: string
+    ResponseMsg:
+      type: object
+      properties:
+        status:
+          type: string
+          format: success
+        message:
+          type: string
+          format: message string
+    PredictionJobInfo:
+      type: object
+      properties:
+        prediction_job_id:
+          type: integer
+          format: int64
+    PredictionJobResult:
+      type: object
+      properties:
+        status:
+          type: string
+          default: pending
+          enum:
+          - finished
+          - pending
+          - in progress
+        ml_model_id:
+          type: integer
+          format: int64
+        accuracy:
+          type: string
+    EvaluationJobResult:
+      type: object
+      properties:
+        status:
+          type: string
+          default: pending
+          enum:
+          - finished
+          - pending
+          - in progress
+        ml_model_id:
+          type: integer
+          format: int64
+        accuracy:
+          type: string
+    EvaluationJobInfo:
+      type: object
+      properties:
+        evaluation_job_id:
+          type: integer
+          format: int64
+    TrainJobStatus:
+      type: object
+      properties:
+        training_job_status:
+          type: string
+          default: pending
+          enum:
+          - finished
+          - pending
+          - in progress
+        ml_model_id:
+          type: string
+    TrainJobInfoResponse:
+      type: object
+      properties:
+        train_job_id:
+          type: integer
+          format: int64
+    TrainJobInfoRequest:
+      type: object
+      properties:
+        dataset_id:
+          type: integer
+          format: int64
+        columns_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+    DataSetInfoResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          format: success
+        data_set_id:
+          type: integer
+          format: int64
+        dataset_name:
+          type: string
+          format: dataset name
+    UploadDatasetResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int64
+        data_set_id:
+          type: integer
+          format: int64
+    Credentials:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        password:
+          type: string
+          format: encrypted string
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+  parameters:
+    limit:
+      name: limit
+      in: query
+      description: The number of results to return from offset
+      required: false
+      schema:
+        type: integer
+        example: 25
+        default: 100
+    offset:
+      name: offset
+      in: query
+      description: The initial position from which to return results
+      required: false
+      schema:
+        type: integer
+        default: 0
+    namespace:
+      name: namespace
+      in: path
+      description: The name of the namespace.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-namespace
+  responses:
+    NotFound:
+      description: Entity not found.
+    IllegalInput:
+      description: Illegal input for operation.
+    GeneralError:
+      description: General Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GeneralError'
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://example.org/api/oauth/dialog
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
