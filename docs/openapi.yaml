@@ -29,12 +29,18 @@ tags:
   description: Authentication and Authorization
   externalDocs:
     url: https://stackoverflow.blog/2022/04/14/the-authorization-code-grant-in-excruciating-detail/
-- name: "User"
-  description: "Operations about user"
-  externalDocs:
-    url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
 - name: Namespaces
   description: provides namespace level isolation
+- name: Role
+  description: Roles can be defined or modified in the configuration file as a list of dictionaries.
+  externalDocs:
+    url: https://jupyterhub.readthedocs.io/en/stable/rbac/roles.html#define-role-target
+- name: User
+  description: Operations about user
+  externalDocs:
+    url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+- name: Group
+  description: Operations about group
 - name: Dataset Management
   description: Management of Dataset
 - name: Train
@@ -176,6 +182,75 @@ paths:
                   token_type:
                     type: string
                     description: Will always be 'Bearer'
+  /namespaces/{namespace}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    put:
+      operationId: putNamespace
+      summary: Create a namespace
+      description: Creates a new namespace object. A namespace enables the contextual grouping of related jobs and datasets. Namespaces must contain only letters (`a-z`, `A-Z`), numbers (`0-9`), underscores (`_`), dashes (`-`), colons (`:`), slashes (`/`), or dots (`.`). A namespace is case-insensitive with a maximum length of `1024` characters. Note jobs and datasets will be unique within a namespace, but not across namespaces.
+      tags:
+        - Namespaces
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatedNamespace'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namespace'
+    get:
+      operationId: getNamespace
+      summary: Retrieve a namespace
+      description: Returns a namespace.
+      tags:
+        - Namespaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namespace'
+  /namespaces:
+    get:
+      operationId: getNamespaces
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      summary: List all namespaces
+      description: Returns a list of namespaces.
+      tags:
+        - Namespaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NamespaceList'
+  /roles:
+    get:
+      tags:
+      - Role
+      summary: List roles
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        200:
+          description: The list of roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+      security: []
   /user:
     get:
       tags:
@@ -359,57 +434,170 @@ paths:
         - oauth2:
             - admin:users
       x-codegen-request-body-name: body
-  /namespaces/{namespace}:
-    parameters:
-      - $ref: '#/components/parameters/namespace'
-    put:
-      operationId: putNamespace
-      summary: Create a namespace
-      description: Creates a new namespace object. A namespace enables the contextual grouping of related jobs and datasets. Namespaces must contain only letters (`a-z`, `A-Z`), numbers (`0-9`), underscores (`_`), dashes (`-`), colons (`:`), slashes (`/`), or dots (`.`). A namespace is case-insensitive with a maximum length of `1024` characters. Note jobs and datasets will be unique within a namespace, but not across namespaces.
-      tags:
-        - Namespaces
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatedNamespace'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Namespace'
+  /groups:
     get:
-      operationId: getNamespace
-      summary: Retrieve a namespace
-      description: Returns a namespace.
       tags:
-        - Namespaces
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Namespace'
-  /namespaces:
-    get:
-      operationId: getNamespaces
+      - Group
+      summary: List groups
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-      summary: List all namespaces
-      description: Returns a list of namespaces.
-      tags:
-        - Namespaces
       responses:
-        '200':
-          description: OK
+        200:
+          description: The list of groups
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NamespaceList'
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
+  /groups/{name}:
+    get:
+      tags:
+      - Group
+      summary: Get a group by name
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The group model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
+    post:
+      tags:
+      - Group
+      summary: Create a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: The group has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - admin:groups
+    delete:
+      tags:
+      - Group
+      summary: Delete a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The group has been deleted
+          content: {}
+      security:
+        - oauth2:
+            - admin:groups
+  /groups/{name}/users:
+    post:
+      tags:
+      - Group
+      summary: Add users to a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The users to add to the group
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                users:
+                  type: array
+                  description: List of usernames to add to the group
+                  items:
+                    type: string
+        required: true
+      responses:
+        200:
+          description: The users have been added to the group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - groups
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Group
+      summary: |
+        Remove users from a group
+      description: |
+        Body should be a JSON dictionary
+        where `users` is a list of usernames to remove from the groups.
+
+        ```json
+        {
+          "users": ["name1", "name2"]
+        }
+        ```
+
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      # requestBody:
+      #   description: The users to remove from the group
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         properties:
+      #           users:
+      #             type: array
+      #             description: List of usernames to remove from the group
+      #             items:
+      #               type: string
+      #   required: true
+      responses:
+        200:
+          description: The users have been removed from the group
+          content: {}
+      security:
+        - oauth2:
+            - groups
+      x-codegen-request-body-name: body
   /dataset:
     get:
       tags:
@@ -857,6 +1045,36 @@ components:
           description: |
             Authentication state of the user. Only available with admin:users:auth_state
             scope. None otherwise.
+    Group:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The group's name
+        users:
+          type: array
+          description: The names of users who are members of this group
+          items:
+            type: string
+        roles:
+          type: array
+          description: The names of roles this group has
+          items:
+            type: string
+    Role:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The role's name
+        description:
+          type: string
+          description: The role's description
+        scopes:
+          type: array
+          description: Roles are collections of scopes that specify the level of what a client is allowed to do
+          items:
+            type: string
     RequestIdentity:
       description: |
         The model for the entity making the request.
@@ -924,7 +1142,11 @@ components:
         example: my-namespace
   responses:
     NotFound:
-      description: Entity not found.
+      description: The specified resource was not found
+      content: {}
+    Unauthorized:
+      description: Authentication/Authorization error
+      content: {}
     IllegalInput:
       description: Illegal input for operation.
     GeneralError:
