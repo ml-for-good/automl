@@ -25,6 +25,10 @@ security:
   - oauth2:
       - self
 tags:
+- name: Authorization
+  description: Authentication and Authorization
+  externalDocs:
+    url: https://stackoverflow.blog/2022/04/14/the-authorization-code-grant-in-excruciating-detail/
 - name: "User"
   description: "Operations about user"
   externalDocs:
@@ -43,6 +47,135 @@ tags:
 - name: Predict
   description: Operations about Prediction
 paths:
+  /oauth2/authorize:
+    get:
+      tags:
+      - Authorization
+      summary: OAuth 2.0 authorize endpoint
+      description: |
+        Redirect users to this URL to begin the OAuth process.
+        It is not an API endpoint.
+      parameters:
+        - name: client_id
+          in: query
+          description: The client id
+          required: true
+          schema:
+            type: string
+        - name: response_type
+          in: query
+          description: The response type (always 'code')
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: A state string
+          schema:
+            type: string
+        - name: redirect_uri
+          in: query
+          description: The redirect url
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content: {}
+        400:
+          description: OAuth2Error
+          content: {}
+    post:
+      tags:
+      - Authorization
+      summary: The OAuth server authenticates the user
+      description: The OAuth server will render a login form to gather login information, such as a username and password, then the user can enter credentials and the OAuth server authenticates the user.
+      operationId: login
+      requestBody:
+        description: Login Credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+        400:
+          description: Invalid username/password supplied
+          content: {}
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorModel'
+      x-codegen-request-body-name: body
+  /oauth2/token:
+    post:
+      tags:
+      - Authorization
+      summary: Request an OAuth2 token
+      description: |
+        Request an OAuth2 token from an authorization code.
+        This request completes the OAuth process.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+                - client_id
+                - client_secret
+                - code
+                - grant_type
+                - redirect_uri
+              properties:
+                client_id:
+                  type: string
+                  description: The client id
+                client_secret:
+                  type: string
+                  description: The client secret
+                grant_type:
+                  type: string
+                  description: The grant type (always 'authorization_code')
+                code:
+                  type: string
+                  description: The code provided by the authorization redirect
+                redirect_uri:
+                  type: string
+                  description: The redirect url
+        required: true
+      responses:
+        200:
+          description: JSON response including the token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: The new API token for the user
+                  token_type:
+                    type: string
+                    description: Will always be 'Bearer'
   /user:
     get:
       tags:
@@ -86,6 +219,8 @@ paths:
             - read:roles:users
             - admin:auth_state
     post:
+      tags:
+      - User
       summary: Create multiple users
       requestBody:
         content:
@@ -116,35 +251,113 @@ paths:
         - oauth2:
             - admin:users
       x-codegen-request-body-name: body
-  /automl/login:
+  /users/{name}:
+    get:
+      tags:
+      - User
+      summary: Get a user by name
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The User model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
     post:
       tags:
       - User
-      summary: Login to AutoML
-      operationId: login
+      summary: Create a single user
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: The user has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+    delete:
+      tags:
+      - User
+      summary: Delete a user
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The user has been deleted
+          content: {}
+      security:
+        - oauth2:
+            - admin:users
+    patch:
+      tags:
+      - User
+      summary: Modify a user
+      description: Change a user's name or admin status
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
       requestBody:
-        description: Login Credentials
+        description:
+          Updated user info. At least one key to be updated (name or admin)
+          is required.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Credentials'
+              type: object
+              properties:
+                name:
+                  type: string
+                  description:
+                    the new name (optional, if another key is updated i.e.
+                    admin)
+                admin:
+                  type: boolean
+                  description:
+                    update admin (optional, if another key is updated i.e.
+                    name)
         required: true
       responses:
         200:
-          description: successful operation
+          description: The updated user info
           content:
             application/json:
               schema:
-                type: string
-        400:
-          description: Invalid username/password supplied
-          content: {}
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorModel'
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
       x-codegen-request-body-name: body
   /namespaces/{namespace}:
     parameters:
