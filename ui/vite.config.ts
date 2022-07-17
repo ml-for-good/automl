@@ -36,4 +36,7 @@ export default defineConfig({
     viteSvgr(),
   ],
   assetsInclude: ['.png', '.svg'],
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' },
+  },
 })
