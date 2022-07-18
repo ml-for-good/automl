@@ -41,7 +41,7 @@ tags:
     url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
 - name: Group
   description: Operations about group
-- name: Dataset Management
+- name: Dataset
   description: Management of Dataset
 - name: Train
   description: Operations about Training
@@ -598,71 +598,122 @@ paths:
         - oauth2:
             - groups
       x-codegen-request-body-name: body
-  /dataset:
-    get:
+  /namespaces/{namespace}/files/{filename}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    post:
       tags:
-      - Dataset Management
-      summary: Query dataset info
-      description: Query Dataset Info
-      operationId: query_dataset_info
+      - Dataset
+      summary: upload files
+      operationId: automl.namespaces.files.create
       parameters:
-      - name: dataset_id
-        in: query
-        description: Dataset Id to query by
+      - name: filename
+        in: path
+        description: filename
         required: true
         schema:
           type: string
-      - name: dataset_name
-        in: query
-        description: Dataset name to query by, support like query
-        required: false
-        schema:
-          type: string
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DataSetInfoResponse'
-        400:
-          description: Invalid dataset id value
-          content: {}
-    post:
-      tags:
-      - Dataset Management
-      summary: Upload a Dataset
-      operationId: upload_a_dataset
       requestBody:
         content:
+          application/octet-stream:
+            schema:
+              type: string
+              description: the attachment content
+              format: binary
           multipart/form-data:
             schema:
+              required:
+              - file
               properties:
                 file:
                   type: string
+                  description: the attachment content
                   format: binary
+        required: true
       responses:
         200:
-          description: successful operation
+          description: Upload was successful
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/UploadDatasetResponse'
+                type: object
+                properties:
+                  uri:
+                    oneOf: 
+                      - $ref: '#/components/schemas/URI'
+                      - type: array
+                        description: multiple files
+                        items:
+                          $ref: '#/components/schemas/URI'
         400:
-          description: Invalid dataset supplied
+          description: Invalid input
           content: {}
+  /namespaces/{namespace}/datasets:
+    post:
+      tags:
+      - Dataset
+      description: Creates a dataset.
+      operationId: automl.namespaces.datasets.create
+      parameters:
+        - description: Required. The resource name of the namespace to create the dataset for.
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Dataset"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+          description: Successful response
+    get:
+      tags:
+      - Dataset
+      description: Lists datasets in the namespace.
+      operationId: automl.namespaces.datasets.list
+      parameters:
+        - description: Required. The resource name of the namespace to create the dataset for.
+          in: path
+          name: namespace
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListDatasetsResponse"
+          description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+    get:
+      operationId: getDataset
+      summary: Retrieve a dataset
+      description: Returns a dataset.
+      tags:
+        - Dataset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
     delete:
       tags:
-      - Dataset Management
+      - Dataset
       summary: Delete Dataset by Dataset Id
       operationId: delete_dataset_by_id
-      parameters:
-      - name: dataset_id
-        in: query
-        description: Dataset Set Id that will be deleted
-        required: true
-        schema:
-          type: string
       responses:
         200:
           description: successful operation
@@ -670,30 +721,34 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
-    put:
+    patch:
       tags:
-        - Dataset Management
-      summary: Put Dataset by Dataset Id
-      operationId: put_dataset_by_id
-      parameters:
-        - name: dataset_id
-          in: query
-          description: Dataset Set Id that will be Updated
-          required: true
-          schema:
-            type: string
-        - name: dataset_name
-          in: query
-          description: Update Dataset
-          required: false
-          schema:
-            type: string
+      - Dataset
+      summary: Modify a dataset
+      operationId: patch_dataset_by_id
+      requestBody:
+        description:
+          Updated user info. At least one key to be updated (name or admin)
+          is required.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description:
+                    the new name (optional, if another key is updated)
+        required: true
         # others column wait update...
       responses:
-        '200':
-          description: successful operation
-          content: {}
-        '400':
+        200:
+          description: The updated dataset info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+        400:
           description: Invalid dataset id value
           content: {}
   /train/job:
@@ -1006,39 +1061,6 @@ components:
           items:
             type: integer
             format: int64
-    DataSetInfo:
-      type: object
-      properties:
-        dateset_id:
-          type: integer
-          format: int64
-        dateset_name:
-          type: string
-          format: dataset name
-        dateset_path:
-          type: string
-          format: file store path(third platform)
-    DataSetInfoResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          format: success
-        dataset_id:
-          type: integer
-          format: int64
-        dataset_name:
-          type: string
-          format: dataset name
-    UploadDatasetResponse:
-      type: object
-      properties:
-        status:
-          type: integer
-          format: int64
-        data_set_id:
-          type: integer
-          format: int64
     Credentials:
       type: object
       properties:
@@ -1048,16 +1070,6 @@ components:
         password:
           type: string
           format: encrypted string
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
     User:
       type: object
       properties:
@@ -1151,6 +1163,37 @@ components:
                 type: string
               example:
                 - "read:users"
+    URI:
+      type: string
+      description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+      example: s3://datasets/train.csv
+    Dataset:
+      description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
+      properties:
+        createTime:
+          description: Output only. Timestamp when this dataset was created.
+          format: google-datetime
+          type: string
+        description:
+          description: User-provided description of the dataset. The description can be up to 25000 characters long.
+          type: string
+        namespace:
+          type: string
+          description: The namespace of the dataset.
+        name:
+          type: string
+          description: The name of the dataset.
+        dataset_id:
+          description: "The resource id of the dataset"
+          type: string
+        uri:
+          $ref: "#/components/schemas/URI"
+      type: object
+    ListDatasetsResponse:
+      description: Response message for AutoMl.ListDatasets.
+      items: 
+        $ref: "#/components/schemas/Dataset"
+      type: array
   parameters:
     access_token:
       description: OAuth access token.
@@ -1184,6 +1227,15 @@ components:
         type: string
         maxLength: 1024
         example: my-namespace
+    dataset:
+      name: dataset
+      in: path
+      description: The id of the dataset.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-dataset
   responses:
     NotFound:
       description: The specified resource was not found
@@ -1213,7 +1265,7 @@ components:
             self:
               The user’s own resources
             all:
-              Contains all available scopes and grants full rights to all actions.
+              Contains all available scopes and grants full rights to all actions. 
             admin:users:
               Read, write, create and delete users and their authentication
               state.
