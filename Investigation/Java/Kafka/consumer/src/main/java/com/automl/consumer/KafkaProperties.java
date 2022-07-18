@@ -6,7 +6,7 @@ package com.automl.consumer;
  * {@code @date} 2022/7/11
  */
 public class KafkaProperties {
-  public static final String TOPIC = "autoML";
+  public static final String TOPIC = "automl";
   public static final String KAFKA_SERVER_URL = "localhost";
   public static final int KAFKA_SERVER_PORT = 9092;
 

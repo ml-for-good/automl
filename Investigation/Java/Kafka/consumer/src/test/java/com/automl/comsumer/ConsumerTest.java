@@ -15,7 +15,7 @@ public class ConsumerTest {
   public void simpleConsumerTest() {
     Consumer consumer =
         new Consumer(
-            KafkaProperties.KAFKA_SERVER_URL + KafkaProperties.KAFKA_SERVER_PORT,
+            KafkaProperties.KAFKA_SERVER_URL +":"+ KafkaProperties.KAFKA_SERVER_PORT,
             KafkaProperties.TOPIC,
             KafkaProperties.KAFKA_GROUP_ID);
     for (ConsumerRecord<String, String> consumerRecord : consumer.configConsumer()) {
