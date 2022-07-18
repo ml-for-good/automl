@@ -1,21 +1,25 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { CssBaseline, ThemeProvider } from '@mui/material'
-import { theme } from './theme'
-import { Models } from './pages/models'
-import { Datasets } from './pages/datasets'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Dashboard } from './layouts/dashboard'
+import { Datasets } from './pages/app/datasets'
+import { Models } from './pages/app/models'
+import { Login } from './pages/login'
+import { Register } from './pages/register'
+import { theme } from './theme'
 
 export const App = () => (
-  <HashRouter>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <HashRouter>
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route index element={<Navigate to="/app/models" />} />
         <Route path="/app" element={<Dashboard />}>
           <Route path="models" element={<Models />} />
           <Route path="datasets" element={<Datasets />} />
         </Route>
       </Routes>
-    </ThemeProvider>
-  </HashRouter>
+    </HashRouter>
+  </ThemeProvider>
 )

@@ -1,0 +1,1195 @@
+openapi: 3.0.1
+info:
+  title: AutoML
+  description: 'We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.'
+  termsOfService: http://example.com/terms/
+  contact:
+    name: API Support
+    url: http://www.example.com/support
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+- url: https://development.example.com/v1
+  description: Development server
+- url: https://staging.example.com/v1
+  description: Staging server
+- url: https://api.example.com/v1
+  description: Production server
+security:
+  - oauth2:
+      - self
+tags:
+- name: Authorization
+  description: Authentication and Authorization
+  externalDocs:
+    url: https://stackoverflow.blog/2022/04/14/the-authorization-code-grant-in-excruciating-detail/
+- name: Namespaces
+  description: provides namespace level isolation
+- name: Role
+  description: Roles can be defined or modified in the configuration file as a list of dictionaries.
+  externalDocs:
+    url: https://jupyterhub.readthedocs.io/en/stable/rbac/roles.html#define-role-target
+- name: User
+  description: Operations about user
+  externalDocs:
+    url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+- name: Group
+  description: Operations about group
+- name: Dataset Management
+  description: Management of Dataset
+- name: Train
+  description: Operations about Training
+- name: Evaluate
+  description: Operations about Evaluation
+  externalDocs:
+    description: Find out more about AutoML
+    url: http://swagger.io
+- name: Predict
+  description: Operations about Prediction
+paths:
+  /oauth2/authorize:
+    get:
+      tags:
+      - Authorization
+      summary: OAuth 2.0 authorize endpoint
+      description: |
+        Redirect users to this URL to begin the OAuth process.
+        It is not an API endpoint.
+      parameters:
+        - name: client_id
+          in: query
+          description: The client id
+          required: true
+          schema:
+            type: string
+        - name: response_type
+          in: query
+          description: The response type (always 'code')
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: A state string
+          schema:
+            type: string
+        - name: redirect_uri
+          in: query
+          description: The redirect url
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content: {}
+        400:
+          description: OAuth2Error
+          content: {}
+    post:
+      tags:
+      - Authorization
+      summary: The OAuth server authenticates the user
+      description: The OAuth server will render a login form to gather login information, such as a username and password, then the user can enter credentials and the OAuth server authenticates the user.
+      operationId: login
+      requestBody:
+        description: Login Credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+        400:
+          description: Invalid username/password supplied
+          content: {}
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorModel'
+      x-codegen-request-body-name: body
+  /oauth2/token:
+    post:
+      tags:
+      - Authorization
+      summary: Request an OAuth2 token
+      description: |
+        Request an OAuth2 token from an authorization code.
+        This request completes the OAuth process.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+                - client_id
+                - client_secret
+                - code
+                - grant_type
+                - redirect_uri
+              properties:
+                client_id:
+                  type: string
+                  description: The client id
+                client_secret:
+                  type: string
+                  description: The client secret
+                grant_type:
+                  type: string
+                  description: The grant type (always 'authorization_code')
+                code:
+                  type: string
+                  description: The code provided by the authorization redirect
+                redirect_uri:
+                  type: string
+                  description: The redirect url
+        required: true
+      responses:
+        200:
+          description: JSON response including the token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: The new API token for the user
+                  token_type:
+                    type: string
+                    description: Will always be 'Bearer'
+  /namespaces/{namespace}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    put:
+      operationId: putNamespace
+      summary: Create a namespace
+      description: Creates a new namespace object. A namespace enables the contextual grouping of related jobs and datasets. Namespaces must contain only letters (`a-z`, `A-Z`), numbers (`0-9`), underscores (`_`), dashes (`-`), colons (`:`), slashes (`/`), or dots (`.`). A namespace is case-insensitive with a maximum length of `1024` characters. Note jobs and datasets will be unique within a namespace, but not across namespaces.
+      tags:
+        - Namespaces
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatedNamespace'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namespace'
+    get:
+      operationId: getNamespace
+      summary: Retrieve a namespace
+      description: Returns a namespace.
+      tags:
+        - Namespaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Namespace'
+  /namespaces:
+    get:
+      operationId: getNamespaces
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      summary: List all namespaces
+      description: Returns a list of namespaces.
+      tags:
+        - Namespaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NamespaceList'
+  /roles:
+    get:
+      tags:
+      - Role
+      summary: List roles
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        200:
+          description: The list of roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+      security: []
+  /user:
+    get:
+      tags:
+      - User
+      summary: Return authenticated user's model
+      responses:
+        200:
+          description: |
+            The authenticated user's model is returned
+            with additional information about the permissions associated with the request token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestIdentity"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
+  /users:
+    get:
+      tags:
+      - User
+      summary: List users
+      responses:
+        200:
+          description: The Hub's user list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
+    post:
+      tags:
+      - User
+      summary: Create multiple users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usernames:
+                  type: array
+                  description: list of usernames to create on the Hub
+                  items:
+                    type: string
+                admin:
+                  type: boolean
+                  description: whether the created users should be admins
+        required: true
+      responses:
+        201:
+          description: The users have been created
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The created users
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+      x-codegen-request-body-name: body
+  /users/{name}:
+    get:
+      tags:
+      - User
+      summary: Get a user by name
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The User model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
+    post:
+      tags:
+      - User
+      summary: Create a single user
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: The user has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+    delete:
+      tags:
+      - User
+      summary: Delete a user
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The user has been deleted
+          content: {}
+      security:
+        - oauth2:
+            - admin:users
+    patch:
+      tags:
+      - User
+      summary: Modify a user
+      description: Change a user's name or admin status
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description:
+          Updated user info. At least one key to be updated (name or admin)
+          is required.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description:
+                    the new name (optional, if another key is updated i.e.
+                    admin)
+                admin:
+                  type: boolean
+                  description:
+                    update admin (optional, if another key is updated i.e.
+                    name)
+        required: true
+      responses:
+        200:
+          description: The updated user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+      x-codegen-request-body-name: body
+  /groups:
+    get:
+      tags:
+      - Group
+      summary: List groups
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        200:
+          description: The list of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
+  /groups/{name}:
+    get:
+      tags:
+      - Group
+      summary: Get a group by name
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The group model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
+    post:
+      tags:
+      - Group
+      summary: Create a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: The group has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - admin:groups
+    delete:
+      tags:
+      - Group
+      summary: Delete a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The group has been deleted
+          content: {}
+      security:
+        - oauth2:
+            - admin:groups
+  /groups/{name}/users:
+    post:
+      tags:
+      - Group
+      summary: Add users to a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The users to add to the group
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                users:
+                  type: array
+                  description: List of usernames to add to the group
+                  items:
+                    type: string
+        required: true
+      responses:
+        200:
+          description: The users have been added to the group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - groups
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Group
+      summary: |
+        Remove users from a group
+      description: |
+        Body should be a JSON dictionary
+        where `users` is a list of usernames to remove from the groups.
+
+        ```json
+        {
+          "users": ["name1", "name2"]
+        }
+        ```
+
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      # requestBody:
+      #   description: The users to remove from the group
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         properties:
+      #           users:
+      #             type: array
+      #             description: List of usernames to remove from the group
+      #             items:
+      #               type: string
+      #   required: true
+      responses:
+        200:
+          description: The users have been removed from the group
+          content: {}
+      security:
+        - oauth2:
+            - groups
+      x-codegen-request-body-name: body
+  /dataset:
+    get:
+      tags:
+      - Dataset Management
+      summary: Query dataset info
+      description: Query Dataset Info
+      operationId: query_dataset_info
+      parameters:
+      - name: dataset_id
+        in: query
+        description: Dataset Id to query by
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSetInfoResponse'
+        400:
+          description: Invalid dataset id value
+          content: {}
+    post:
+      tags:
+      - Dataset Management
+      summary: Upload a Dataset
+      operationId: upload_a_dataset
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: successful operation
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadDatasetResponse'
+        400:
+          description: Invalid dataset supplied
+          content: {}
+    delete:
+      tags:
+      - Dataset Management
+      summary: Delete Dataset by Dataset Id
+      operationId: delete_dataset_by_id
+      parameters:
+      - name: dataset_id
+        in: query
+        description: Dataset Set Id that will be deleted
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content: {}
+        400:
+          description: Invalid dataset id value
+          content: {} 
+  /train/job:
+    get:
+      tags:
+      - Train
+      summary: Get the status of a training job
+      description: Get the status of a training job
+      operationId: get_training_job_status
+      parameters:
+      - name: train_job_id
+        in: query
+        description: Get a training job info
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainJobStatus'
+        400:
+          description: Invalid Params
+          content: {}
+    post:
+      tags:
+      - Train
+      summary: Train a dataset by selecting columns
+      description: Train a dataset by selecting columns
+      operationId: create_training_job
+      requestBody:
+        description: Start a training by selecting columns of a datset.
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/TrainJobInfoRequest'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainJobInfoResponse'
+        400:
+          description: Invalid Params
+          content: {}
+      x-codegen-request-body-name: train_job_info
+  /evaluation:
+    get:
+      tags:
+      - Evaluate
+      summary: Get the Evaluation Result
+      description: Get the Evaluation Result
+      operationId: get_evaluation_res
+      parameters:
+      - name: evaluation_job_id
+        in: query
+        description: Evaluation Job ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationJobResult'
+        400:
+          description: invalid param
+          content: {}
+    post:
+      tags:
+      - Evaluate
+      summary: Evaluate the ML model
+      description: Evaluate the ML model
+      operationId: evaluate_ml_model
+      parameters:
+      - name: ml_model_id
+        in: query
+        description: ML Model Id
+        required: true
+        schema:
+          type: integer
+      - name: evaluation_dataset_id
+        in: query
+        description: evaluation_dataset_id
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationJobInfo'
+        400:
+          description: invalid params
+          content: {}
+  /prediction:
+    get:
+      tags:
+      - Predict
+      summary: Get the Prediction Result
+      description: Get the Prediction Result
+      operationId: get_prediction_res
+      parameters:
+      - name: prediction_job_id
+        in: query
+        description: Prediction Job ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionJobResult'
+        400:
+          description: invalid param
+          content: {}
+    post:
+      tags:
+      - Predict
+      summary: Prediction by the ML model
+      description: Prediction by the ML model
+      operationId: predict_by_ml_model
+      parameters:
+      - name: ml_model_id
+        in: query
+        description: ML Model Id
+        required: true
+        schema:
+          type: integer
+      - name: prediction_dataset_id
+        in: query
+        description: prediction_dataset_id
+        schema:
+          type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionJobInfo'
+        400:
+          description: invalid params
+          content: {}
+components:
+  schemas:
+    CreatedNamespace:
+      type: object
+      properties:
+        ownerName:
+          description: The owner of the namespace.
+          type: string
+        description:
+          description: The description of the namespace.
+          type: string
+      required:
+        - ownerName
+      example:
+        ownerName: me
+        description: My first namespace!
+    Namespace:
+      type: object
+      properties:
+        name:
+          description: The name of the namespace.
+          type: string
+        createdAt:
+          description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was created.
+          type: string
+          format: date-time
+        updatedAt:
+          description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was updated.
+          type: string
+          format: date-time
+        ownerName:
+          description: The owner of the namespace.
+          type: string
+        description:
+          description: The description of the namespace.
+          type: string
+      example:
+        name: my-namespace
+        createdAt: '2019-05-09T19:49:24.201361Z'
+        updatedAt: '2019-05-09T19:49:24.201361Z'
+        ownerName: me
+        description: My first namespace!
+    NamespaceList:
+      type: object
+      properties:
+        namespaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Namespace'
+    GeneralError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    ErrorModel:
+      type: object
+      required:
+      - message
+      - code
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          minimum: 100
+          maximum: 600
+    ExtendedErrorModel:
+      allOf:
+      - $ref: '#/components/schemas/ErrorModel'
+      - type: object
+        required:
+        - rootCause
+        properties:
+          rootCause:
+            type: string
+    ResponseMsg:
+      type: object
+      properties:
+        status:
+          type: string
+          format: success
+        message:
+          type: string
+          format: message string
+    PredictionJobInfo:
+      type: object
+      properties:
+        prediction_job_id:
+          type: integer
+          format: int64
+    PredictionJobResult:
+      type: object
+      properties:
+        status:
+          type: string
+          default: pending
+          enum:
+          - finished
+          - pending
+          - in progress
+        ml_model_id:
+          type: integer
+          format: int64
+        accuracy:
+          type: string
+    EvaluationJobResult:
+      type: object
+      properties:
+        status:
+          type: string
+          default: pending
+          enum:
+          - finished
+          - pending
+          - in progress
+        ml_model_id:
+          type: integer
+          format: int64
+        accuracy:
+          type: string
+    EvaluationJobInfo:
+      type: object
+      properties:
+        evaluation_job_id:
+          type: integer
+          format: int64
+    TrainJobStatus:
+      type: object
+      properties:
+        training_job_status:
+          type: string
+          default: pending
+          enum:
+          - finished
+          - pending
+          - in progress
+        ml_model_id:
+          type: string
+    TrainJobInfoResponse:
+      type: object
+      properties:
+        train_job_id:
+          type: integer
+          format: int64
+    TrainJobInfoRequest:
+      type: object
+      properties:
+        dataset_id:
+          type: integer
+          format: int64
+        columns_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+    DataSetInfoResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          format: success
+        data_set_id:
+          type: integer
+          format: int64
+        dataset_name:
+          type: string
+          format: dataset name
+    UploadDatasetResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int64
+        data_set_id:
+          type: integer
+          format: int64
+    Credentials:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        password:
+          type: string
+          format: encrypted string
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The user's name
+        admin:
+          type: boolean
+          description: Whether the user is an admin
+        roles:
+          type: array
+          description: The names of roles this user has
+          items:
+            type: string
+        groups:
+          type: array
+          description: The names of groups where this user is a member
+          items:
+            type: string
+        pending:
+          type: string
+          description: The currently pending action, if any
+          enum:
+            - spawn
+            - stop
+        auth_state:
+          type: object
+          properties: {}
+          description: |
+            Authentication state of the user. Only available with admin:users:auth_state
+            scope. None otherwise.
+    Group:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The group's name
+        users:
+          type: array
+          description: The names of users who are members of this group
+          items:
+            type: string
+        roles:
+          type: array
+          description: The names of roles this group has
+          items:
+            type: string
+    Role:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The role's name
+        description:
+          type: string
+          description: The role's description
+        scopes:
+          type: array
+          description: Roles are collections of scopes that specify the level of what a client is allowed to do
+          items:
+            type: string
+    RequestIdentity:
+      description: |
+        The model for the entity making the request.
+        Extends User model to add information about the specific credentials (e.g. session).
+      allOf:
+        - type: object
+          oneOf:
+            - $ref: "#/components/schemas/User"
+          discriminator:
+            propertyName: kind
+            mapping:
+              user: "#/components/schemas/User"
+        - type: object
+          properties:
+            session_id:
+              type: string
+              nullable: true
+              description: |
+                The session id associated with the request's OAuth token, if any.
+                null, if the request token not associated with a session id.
+
+                Added in 2.0.
+            scopes:
+              type: array
+              description: |
+                The list of all expanded scopes the request credentials have access to.
+
+                Added in 2.0.
+              items:
+                type: string
+              example:
+                - "read:users"
+  parameters:
+    access_token:
+      description: OAuth access token.
+      in: query
+      name: access_token
+      schema:
+        type: string
+    limit:
+      name: limit
+      in: query
+      description: The number of results to return from offset
+      required: false
+      schema:
+        type: integer
+        example: 25
+        default: 100
+    offset:
+      name: offset
+      in: query
+      description: The initial position from which to return results
+      required: false
+      schema:
+        type: integer
+        default: 0
+    namespace:
+      name: namespace
+      in: path
+      description: The name of the namespace.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-namespace
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content: {}
+    Unauthorized:
+      description: Authentication/Authorization error
+      content: {}
+    IllegalInput:
+      description: Illegal input for operation.
+    GeneralError:
+      description: General Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GeneralError'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://hub.example/hub/api/oauth2/authorize
+          tokenUrl: https://hub.example/hub/api/oauth2/token
+          scopes:
+            (openapi-reference): https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+            (rbac-reference): https://jupyterhub.readthedocs.io/en/stable/rbac/index.html
+            (scope-reference): https://jupyterhub.readthedocs.io/en/stable/rbac/scopes.html
+            self:
+              The user’s own resources
+            all:
+              Contains all available scopes and grants full rights to all actions. 
+            admin:users:
+              Read, write, create and delete users and their authentication
+              state.
+            admin:auth_state: Read a user’s authentication state.
+            users:
+              Read and write permissions to user models (excluding authentication state).
+            delete:users: Delete users.
+            list:users: List users, including at least their names.
+            read:users:
+              Read user models (excluding authentication state).
+            read:users:name: Read names of users.
+            read:users:groups: Read users’ group membership.
+            read:roles: Read role assignments.
+            read:roles:users: Read user role assignments.
+            read:roles:groups: Read group role assignments.
+            admin:groups: Read and write group information, create and delete groups.
+            groups: Read and write group information, including adding/removing users
+              to/from groups.
+            list:groups: List groups, including at least their names.
+            read:groups: Read group models.
+            read:groups:name: Read group names.
+            delete:groups: Delete groups.
+            read:metrics: Read prometheus metrics.
