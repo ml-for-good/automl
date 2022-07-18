@@ -612,6 +612,12 @@ paths:
         required: true
         schema:
           type: string
+      - name: dataset_name
+        in: query
+        description: Dataset name to query by, support like query
+        required: false
+        schema:
+          type: string
       responses:
         200:
           description: successful operation
@@ -663,7 +669,33 @@ paths:
           content: {}
         400:
           description: Invalid dataset id value
-          content: {} 
+          content: {}
+    put:
+      tags:
+        - Dataset Management
+      summary: Put Dataset by Dataset Id
+      operationId: put_dataset_by_id
+      parameters:
+        - name: dataset_id
+          in: query
+          description: Dataset Set Id that will be Updated
+          required: true
+          schema:
+            type: string
+        - name: dataset_name
+          in: query
+          description: Update Dataset
+          required: false
+          schema:
+            type: string
+        # others column wait update...
+      responses:
+        '200':
+          description: successful operation
+          content: {}
+        '400':
+          description: Invalid dataset id value
+          content: {}
   /train/job:
     get:
       tags:
@@ -974,13 +1006,25 @@ components:
           items:
             type: integer
             format: int64
+    DataSetInfo:
+      type: object
+      properties:
+        dateset_id:
+          type: integer
+          format: int64
+        dateset_name:
+          type: string
+          format: dataset name
+        dateset_path:
+          type: string
+          format: file store path(third platform)
     DataSetInfoResponse:
       type: object
       properties:
         status:
           type: string
           format: success
-        data_set_id:
+        dataset_id:
           type: integer
           format: int64
         dataset_name:
@@ -1169,7 +1213,7 @@ components:
             self:
               The user’s own resources
             all:
-              Contains all available scopes and grants full rights to all actions. 
+              Contains all available scopes and grants full rights to all actions.
             admin:users:
               Read, write, create and delete users and their authentication
               state.
