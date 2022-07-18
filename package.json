@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/ml-for-good/automl#readme",
   "devDependencies": {
-    "husky": "7.0.4",
-    "lint-staged": "12.3.3"
+    "husky": "8.0.1",
+    "lint-staged": "13.0.3"
   }
 }
