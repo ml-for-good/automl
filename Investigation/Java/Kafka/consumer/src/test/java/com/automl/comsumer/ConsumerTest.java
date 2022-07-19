@@ -7,15 +7,14 @@ import org.junit.jupiter.api.Test;
 
 /**
  * @author jiaqi.zhang
- * @version 1.0
- * {@code @date} 2022/7/18
+ * @version 1.0 {@code @date} 2022/7/18
  */
 public class ConsumerTest {
   @Test
   public void simpleConsumerTest() {
     Consumer consumer =
         new Consumer(
-            KafkaProperties.KAFKA_SERVER_URL +":"+ KafkaProperties.KAFKA_SERVER_PORT,
+            KafkaProperties.KAFKA_SERVER_URL + ":" + KafkaProperties.KAFKA_SERVER_PORT,
             KafkaProperties.TOPIC,
             KafkaProperties.KAFKA_GROUP_ID);
     for (ConsumerRecord<String, String> consumerRecord : consumer.configConsumer()) {
