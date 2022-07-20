@@ -639,7 +639,7 @@ paths:
                 type: object
                 properties:
                   uri:
-                    oneOf: 
+                    oneOf:
                       - $ref: '#/components/schemas/URI'
                       - type: array
                         description: multiple files
@@ -685,6 +685,8 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
       responses:
         "200":
           content:
@@ -727,20 +729,13 @@ paths:
       summary: Modify a dataset
       operationId: patch_dataset_by_id
       requestBody:
+        required: true
         description:
-          Updated user info. At least one key to be updated (name or admin)
-          is required.
+          Updated DataSet by DataSetId
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description:
-                    the new name (optional, if another key is updated)
-        required: true
-        # others column wait update...
+              $ref: "#/components/schemas/Dataset"
       responses:
         200:
           description: The updated dataset info
@@ -1191,7 +1186,7 @@ components:
       type: object
     ListDatasetsResponse:
       description: Response message for AutoMl.ListDatasets.
-      items: 
+      items:
         $ref: "#/components/schemas/Dataset"
       type: array
   parameters:
@@ -1265,7 +1260,7 @@ components:
             self:
               The user’s own resources
             all:
-              Contains all available scopes and grants full rights to all actions. 
+              Contains all available scopes and grants full rights to all actions.
             admin:users:
               Read, write, create and delete users and their authentication
               state.
