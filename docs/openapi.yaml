@@ -731,7 +731,7 @@ paths:
       requestBody:
         required: true
         description:
-          Updated DataSet by DataSetId
+          Updated Dataset by Dataset Id
         content:
           application/json:
             schema:
