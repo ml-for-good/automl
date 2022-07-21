@@ -12,8 +12,8 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.1
 externalDocs:
-  description: Find out more about Swagger
-  url: http://swagger.io
+  description: Please copy the entire content of this doc to the swagger editor to design the API
+  url: http://editor.swagger.io
 servers:
 - url: https://development.example.com/v1
   description: Development server
@@ -43,13 +43,12 @@ tags:
   description: Operations about group
 - name: Dataset
   description: Management of Dataset
-- name: Train
-  description: Operations about Training
+- name: Model
+  description: Operations about model
+- name: TrainingJob
+  description: Operations about TrainingJob
 - name: Evaluate
   description: Operations about Evaluation
-  externalDocs:
-    description: Find out more about AutoML
-    url: http://swagger.io
 - name: Predict
   description: Operations about Prediction
 paths:
@@ -649,18 +648,13 @@ paths:
           description: Invalid input
           content: {}
   /namespaces/{namespace}/datasets:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
     post:
       tags:
       - Dataset
       description: Creates a dataset.
       operationId: automl.namespaces.datasets.create
-      parameters:
-        - description: Required. The resource name of the namespace to create the dataset for.
-          in: path
-          name: namespace
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -679,20 +673,16 @@ paths:
       description: Lists datasets in the namespace.
       operationId: automl.namespaces.datasets.list
       parameters:
-        - description: Required. The resource name of the namespace to create the dataset for.
-          in: path
-          name: namespace
-          required: true
-          schema:
-            type: string
-        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListDatasetsResponse"
+                items: 
+                  $ref: "#/components/schemas/Dataset"
+                type: array
           description: Successful response
   /namespaces/{namespace}/datasets/{dataset}:
     parameters:
@@ -729,13 +719,14 @@ paths:
       summary: Modify a dataset
       operationId: patch_dataset_by_id
       requestBody:
-        required: true
         description:
-          Updated Dataset by Dataset Id
+          Updated user info. At least one key to be updated (name or admin)
+          is required.
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/Dataset"
+        required: true
       responses:
         200:
           description: The updated dataset info
@@ -746,54 +737,205 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
-  /train/job:
+  /namespaces/{namespace}/models:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
     get:
       tags:
-      - Train
-      summary: Get the status of a training job
-      description: Get the status of a training job
-      operationId: get_training_job_status
-      parameters:
-      - name: train_job_id
-        in: query
-        description: Get a training job info
-        required: true
-        schema:
-          type: integer
+      - Model
+      description: Lists models in the namespace.
+      operationId: automl.namespaces.models.list
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainJobStatus'
-        400:
-          description: Invalid Params
-          content: {}
+                items: 
+                  $ref: "#/components/schemas/Model"
+                type: array
+          description: Successful response
     post:
       tags:
-      - Train
-      summary: Train a dataset by selecting columns
-      description: Train a dataset by selecting columns
-      operationId: create_training_job
+      - Model
+      description: Creates a model which will later contain one or more versions
+      operationId: automl.namespaces.models.create
       requestBody:
-        description: Start a training by selecting columns of a datset.
         content:
-          '*/*':
+          application/json:
             schema:
-              $ref: '#/components/schemas/TrainJobInfoRequest'
-        required: true
+              $ref: "#/components/schemas/Model"
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainJobInfoResponse'
+                $ref: "#/components/schemas/Model"
+          description: Successful response
+  /namespaces/{namespace}/models/{model}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/model'
+    get:
+      operationId: automl.namespaces.models.get
+      summary: Retrieve a model
+      description: Returns a model.
+      tags:
+        - Model
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+    patch:
+      tags:
+      - Model
+      summary: Modify a model
+      operationId: patch_model_by_id
+      requestBody:
+        description:
+          Updated model info. At least one key to be updated (name or admin)
+          is required.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Model"
+        required: true
+      responses:
+        200:
+          description: The updated dataset info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Model"
         400:
-          description: Invalid Params
+          description: Invalid dataset id value
           content: {}
-      x-codegen-request-body-name: train_job_info
+  /namespaces/{namespace}/models/{model}/versions:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    get:
+      tags:
+      - Model
+      description: Lists versions
+      operationId: automl.namespaces.models.versions.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Version"
+                type: array
+          description: Successful response
+    post:
+      tags:
+      - Model
+      description: Creates a new version of a model
+      operationId: automl.namespaces.models.versions.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Version"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+          description: Successful response
+  /namespaces/{namespace}/models/{model}/versions/{version}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
+    get:
+      operationId: automl.namespaces.models.versions.get
+      summary: Retrieve a version
+      description: Returns a version.
+      tags:
+        - Model
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+    patch:
+      tags:
+      - Model
+      summary: Modify a version
+      operationId: automl.namespaces.models.versions.patch
+      requestBody:
+        description:
+          Updated version info. At least one key to be updated
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Version"
+        required: true
+      responses:
+        200:
+          description: The updated dataset info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+        400:
+          description: Invalid version id value
+          content: {}
+    delete:
+      tags:
+      - Model
+      summary: Delete version
+      operationId: automl.namespaces.models.versions.delete
+      responses:
+        200:
+          description: successful operation
+          content: {}
+        400:
+          description: Invalid id
+          content: {}
+  /namespaces/{namespace}/trainingJob:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - TrainingJob
+      description: Creates a TrainingJob
+      operationId: automl.namespaces.trainingJob.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingJob"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingJob"
+          description: Successful response
+  /namespaces/{namespace}/trainingJob/{job}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/job'
+    get:
+      tags:
+      - TrainingJob
+      description: Gets a TrainingJob
+      operationId: automl.namespaces.trainingJob.get
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingJob'
   /evaluation:
     get:
       tags:
@@ -1027,35 +1169,66 @@ components:
         evaluation_job_id:
           type: integer
           format: int64
-    TrainJobStatus:
+    JobState:
+      enum:
+        - UNSPECIFIED
+        - QUEUED
+        - PENDING
+        - RUNNING
+        - SUCCEEDED
+        - FAILED
+        - CANCELLING
+        - CANCELLED
+        - PAUSED
+      type: string
+      description: |
+         * `UNSPECIFIED` - The job state is unspecified.
+         * `QUEUED` - The job has been just created or resumed and processing has not yet begun.
+         * `PENDING` - The service is preparing to run the job.
+         * `RUNNING` - 	The job is in progress.
+         * `SUCCEEDED` - The job completed successfully.
+         * `FAILED` - The job failed.
+         * `CANCELLING` - The job is being cancelled. From this state the job may only go to either SUCCEEDED, FAILED or CANCELLED.
+         * `CANCELLED` - The job has been cancelled.
+         * `PAUSED` - The job has been stopped, and can be resumed.
+    TrainingJob:
       type: object
       properties:
-        training_job_status:
+        jobId:
           type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
+          description: The user-specified id of the job.
+        createTime:
+          format: datetime
           type: string
-    TrainJobInfoResponse:
-      type: object
-      properties:
-        train_job_id:
+          description: Output only. Time when the Job was created.
+        startTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
+        endTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was most recently updated.
+        state:
+          $ref: '#/components/schemas/JobState'
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        jobPosition:
           type: integer
           format: int64
-    TrainJobInfoRequest:
-      type: object
-      properties:
-        dataset_id:
-          type: integer
-          format: int64
-        columns_ids:
-          type: array
-          items:
-            type: integer
-            format: int64
+          description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
+        model:
+          type: string
+          description: The name of the Model resoure that produces this job
+        trainingInput:
+          $ref: '#/components/schemas/ModelMetadata'
+        trainingOnput:
+          type: object
     Credentials:
       type: object
       properties:
@@ -1167,7 +1340,7 @@ components:
       properties:
         createTime:
           description: Output only. Timestamp when this dataset was created.
-          format: google-datetime
+          format: datetime
           type: string
         description:
           description: User-provided description of the dataset. The description can be up to 25000 characters long.
@@ -1184,11 +1357,88 @@ components:
         uri:
           $ref: "#/components/schemas/URI"
       type: object
-    ListDatasetsResponse:
-      description: Response message for AutoMl.ListDatasets.
-      items:
-        $ref: "#/components/schemas/Dataset"
-      type: array
+    ModelMetadata:
+      type: object
+      description: metadata is used to train the model
+      properties:
+        datasetId:
+          description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
+          type: string
+        disableEarlyStopping:
+          description: This disables the early stopping feature. By default, the early stopping feature is enabled, which means ends model training when detects that no more improvents can be made.
+          type: boolean
+        optimizationObjective:
+          description: 'Objective function the model is optimizing towards. The training process creates a model that maximizes/minimizes the value of the objective function over the validation set. The supported optimization objectives depend on the prediction type. If the field is not set, a default objective function is used. CLASSIFICATION_BINARY: "MAXIMIZE_AU_ROC" (default) - Maximize the area under the receiver operating characteristic (ROC) curve. "MINIMIZE_LOG_LOSS" - Minimize log loss. "MAXIMIZE_AU_PRC" - Maximize the area under the precision-recall curve. "MAXIMIZE_PRECISION_AT_RECALL" - Maximize precision for a specified recall value. "MAXIMIZE_RECALL_AT_PRECISION" - Maximize recall for a specified precision value. CLASSIFICATION_MULTI_CLASS : "MINIMIZE_LOG_LOSS" (default) - Minimize log loss. REGRESSION: "MINIMIZE_RMSE" (default) - Minimize root-mean-squared error (RMSE). "MINIMIZE_MAE" - Minimize mean-absolute error (MAE). "MINIMIZE_RMSLE" - Minimize root-mean-squared log error (RMSLE).'
+          type: string
+        optimizationObjectivePrecisionValue:
+          description: Required when optimization_objective is "MAXIMIZE_RECALL_AT_PRECISION". Must be between 0 and 1, inclusive.
+          format: float
+          type: number
+        optimizationObjectiveRecallValue:
+          description: Required when optimization_objective is "MAXIMIZE_PRECISION_AT_RECALL". Must be between 0 and 1, inclusive.
+          format: float
+          type: number
+    Model:
+      allOf:
+        - $ref: '#/components/schemas/ModelMetadata'
+        - type: object
+          description: Represents a machine learning solution.
+          properties:
+            name:
+              type: string
+              description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+            description:
+              type: string
+              description: Optional. The description specified for the model when it was created.
+            defaultVersion:
+              type: string
+              description: Output only. The default version of the model. This version will be used to handle prediction requests that do not specify a version.
+            createTime:
+              description: Output only. Timestamp when this model was created.
+              type: string
+            updateTime:
+              description: Output only. Timestamp when this Model was most recently updated.
+              type: string
+            deploymentState:
+              description: Output only. Deployment state of the model. A model can only serve prediction requests after it gets deployed.
+              enum:
+                - DEPLOYMENT_STATE_UNSPECIFIED
+                - DEPLOYED
+                - UNDEPLOYED
+              type: string
+    Version:
+      allOf:
+        - $ref: '#/components/schemas/ModelMetadata'
+        - type: object
+          description: Represents a version of the model.
+          properties:
+            name:
+              type: string
+              description: Required. The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+            description:
+              type: string
+              description: Optional. The description specified for the model when it was created.
+            createTime:
+              description: Output only. Timestamp when this model was created.
+              type: string
+            updateTime:
+              description: Output only. Timestamp when this Model was most recently updated.
+              type: string
+            errorMessage:
+              description: Output only. The details of a failure or a cancellation.
+              type: string
+            state:
+              enum:
+                - Draft
+                - Training
+                - Ready
+                - Failed
+              type: string
+              description: |
+                 * `Draft` - The version state is unspecified.
+                 * `Ready` - The version is ready for prediction.
+                 * `Training` - The version is being trained. New versions.patch and versions.delete requests will fail if a version is in the Training state.
+                 * `Failed` - errorMessage should contain the details of the failure.
   parameters:
     access_token:
       description: OAuth access token.
@@ -1222,6 +1472,15 @@ components:
         type: string
         maxLength: 1024
         example: my-namespace
+    job:
+      name: job
+      in: path
+      description: The name of the job.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-job
     dataset:
       name: dataset
       in: path
@@ -1231,6 +1490,24 @@ components:
         type: string
         maxLength: 1024
         example: my-dataset
+    model:
+      name: model
+      in: path
+      description: The id of the model.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-model
+    version:
+      name: version
+      in: path
+      description: The id of the version.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: v1
   responses:
     NotFound:
       description: The specified resource was not found
