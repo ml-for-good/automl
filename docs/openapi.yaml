@@ -737,6 +737,45 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+  /namespaces/{namespace}/datasets/{dataset}/tableSpecs:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+    get:
+      tags:
+      - Dataset
+      description: Lists table specs in a dataset.
+      operationId: automl.namespaces.datasets.tableSpecs.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                description: The table specs read.
+                items:
+                  $ref: "#/components/schemas/TableSpec"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}/tableSpecs/{tableSpec}/columnSpecs:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+      - $ref: '#/components/parameters/tableSpec'
+    get:
+      tags:
+      - Dataset
+      description: Lists column specs in a table spec.
+      operationId: automl.projects.locations.datasets.tableSpecs.columnSpecs.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                description: The column specs read.
+                items:
+                  $ref: "#/components/schemas/ColumnSpec"
+                type: array
+          description: Successful response
   /namespaces/{namespace}/models:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1357,6 +1396,43 @@ components:
         uri:
           $ref: "#/components/schemas/URI"
       type: object
+    TableSpec:
+      description: A specification of a relational table. The table's schema is represented via its child column specs. 
+      properties:
+        columnCount:
+          description: Output only. The number of columns of the table. That is, the number of child ColumnSpec-s.
+          format: int64
+          type: string
+        name:
+          description: Output only. The resource name of the table spec. 
+          type: string
+        rowCount:
+          description: Output only. The number of rows (i.e. examples) in the table.
+          format: int64
+          type: string
+        validRowCount:
+          description: Output only. The number of valid rows (i.e. without values that don't match DataType-s of their columns).
+          format: int64
+          type: string
+        uri:
+          $ref: "#/components/schemas/URI"
+      type: object
+    ColumnSpec:
+      type: object
+      description: A representation of a column in a relational table. 
+      properties:
+        name:
+          type: string
+          description: Output only. The resource name of the column specs. 
+        dataType:
+          enum:
+            - UNSPECIFIED
+            - FLOAT64
+            - TIMESTAMP
+            - STRING
+            - CATEGORY
+          type: string
+          description: The data type of elements stored in the column.
     ModelMetadata:
       type: object
       description: metadata is used to train the model
@@ -1378,6 +1454,23 @@ components:
           description: Required when optimization_objective is "MAXIMIZE_PRECISION_AT_RECALL". Must be between 0 and 1, inclusive.
           format: float
           type: number
+        fractionSplit:
+          type: object
+          properties:
+            trainingFraction:
+              format: float
+              type: number
+              description: The fraction of the input data that is to be used to train the Model.
+            validationFraction:
+              format: float
+              type: number
+              description: The fraction of the input data that is to be used to validate the Model.
+            testFraction:
+              format: float
+              type: number
+              description: The fraction of the input data that is to be used to evaluate the Model.
+        targetColumnSpec:
+          $ref: '#/components/schemas/ColumnSpec'
     Model:
       allOf:
         - $ref: '#/components/schemas/ModelMetadata'
@@ -1490,6 +1583,15 @@ components:
         type: string
         maxLength: 1024
         example: my-dataset
+    tableSpec:
+      name: tableSpec
+      in: path
+      description: The id of the tableSpec.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-tableSpec
     model:
       name: model
       in: path
