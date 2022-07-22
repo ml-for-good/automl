@@ -898,6 +898,58 @@ paths:
         400:
           description: invalid params
           content: {}
+  /export:
+    get:
+      tags:
+        - Export
+      summary: Get the Export Result
+      description: Get the Export Result
+      operationId: get_export_res
+      parameters:
+        - name: export_job_id
+          in: query
+          description: Export Job ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportJobResult'
+        400:
+          description: invalid param
+          content: { }
+    post:
+      tags:
+        - Export
+      summary: Export by the ML model
+      description: Export by the ML model
+      operationId: export_by_ml_model
+      parameters:
+        - name: ml_model_id
+          in: query
+          description: ML Model Id
+          required: true
+          schema:
+            type: integer
+        - name: export_filename_id
+          in: query
+          description: export_filename_id
+          schema:
+            type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportJobInfo'
+        400:
+          description: invalid params
+    content: { }
 components:
   schemas:
     CreatedNamespace:
@@ -1025,6 +1077,25 @@ components:
       type: object
       properties:
         evaluation_job_id:
+          type: integer
+          format: int64
+    ExportJobInfo:
+      type: object
+      properties:
+        export_job_id:
+          type: integer
+          format: int64
+    ExportJobResult:
+      type: object
+      properties:
+        status:
+          type: string
+          default: pending
+          enum:
+            - finished
+            - pending
+            - in progress
+        ml_model_id:
           type: integer
           format: int64
     TrainJobStatus:
