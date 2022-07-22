@@ -162,7 +162,7 @@ paths:
                   description: The grant type (always 'authorization_code')
                 code:
                   type: string
-                  description: The code provided by the authorization redirect. value = client_credentials
+                  description: The code provided by the authorization redirect. value = client_credentials or code
                 redirect_uri:
                   type: string
                   description: The redirect url
