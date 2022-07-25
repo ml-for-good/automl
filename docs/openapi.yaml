@@ -1224,7 +1224,7 @@ components:
          * `UNSPECIFIED` - The job state is unspecified.
          * `QUEUED` - The job has been just created or resumed and processing has not yet begun.
          * `PENDING` - The service is preparing to run the job.
-         * `RUNNING` - 	The job is in progress.
+         * `RUNNING` -   The job is in progress.
          * `SUCCEEDED` - The job completed successfully.
          * `FAILED` - The job failed.
          * `CANCELLING` - The job is being cancelled. From this state the job may only go to either SUCCEEDED, FAILED or CANCELLED.
@@ -1434,9 +1434,18 @@ components:
           type: string
           description: The data type of elements stored in the column.
     ModelMetadata:
+      description: Union field model_metadata. The model metadata that is specific to the problem type. Must match the metadata type of the dataset used to train the model. model_metadata can be only one of the following
+      oneOf:
+        - $ref: '#/components/schemas/TabularModelMetadata'
+    TabularModelMetadata:
       type: object
-      description: metadata is used to train the model
+      description: Metadata for Tabular models, metadata is used to train the model
       properties:
+        modelType:
+          description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
+          enum:
+            - Tabular
+          type: string
         datasetId:
           description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
           type: string
@@ -1472,66 +1481,66 @@ components:
         targetColumnSpec:
           $ref: '#/components/schemas/ColumnSpec'
     Model:
-      allOf:
-        - $ref: '#/components/schemas/ModelMetadata'
-        - type: object
-          description: Represents a machine learning solution.
-          properties:
-            name:
-              type: string
-              description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
-            description:
-              type: string
-              description: Optional. The description specified for the model when it was created.
-            defaultVersion:
-              type: string
-              description: Output only. The default version of the model. This version will be used to handle prediction requests that do not specify a version.
-            createTime:
-              description: Output only. Timestamp when this model was created.
-              type: string
-            updateTime:
-              description: Output only. Timestamp when this Model was most recently updated.
-              type: string
-            deploymentState:
-              description: Output only. Deployment state of the model. A model can only serve prediction requests after it gets deployed.
-              enum:
-                - DEPLOYMENT_STATE_UNSPECIFIED
-                - DEPLOYED
-                - UNDEPLOYED
-              type: string
+      type: object
+      description: Represents a machine learning solution.
+      properties:
+        name:
+          type: string
+          description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+        description:
+          type: string
+          description: Optional. The description specified for the model when it was created.
+        defaultVersion:
+          type: string
+          description: Output only. The default version of the model. This version will be used to handle prediction requests that do not specify a version.
+        createTime:
+          description: Output only. Timestamp when this model was created.
+          type: string
+        updateTime:
+          description: Output only. Timestamp when this Model was most recently updated.
+          type: string
+        deploymentState:
+          description: Output only. Deployment state of the model. A model can only serve prediction requests after it gets deployed.
+          enum:
+            - DEPLOYMENT_STATE_UNSPECIFIED
+            - DEPLOYED
+            - UNDEPLOYED
+          type: string
+        modelMetadata:
+          $ref: '#/components/schemas/ModelMetadata'
     Version:
-      allOf:
-        - $ref: '#/components/schemas/ModelMetadata'
-        - type: object
-          description: Represents a version of the model.
-          properties:
-            name:
-              type: string
-              description: Required. The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
-            description:
-              type: string
-              description: Optional. The description specified for the model when it was created.
-            createTime:
-              description: Output only. Timestamp when this model was created.
-              type: string
-            updateTime:
-              description: Output only. Timestamp when this Model was most recently updated.
-              type: string
-            errorMessage:
-              description: Output only. The details of a failure or a cancellation.
-              type: string
-            state:
-              enum:
-                - Draft
-                - Training
-                - Ready
-                - Failed
-              type: string
-              description: |
-                 * `Draft` - The version state is unspecified.
-                 * `Ready` - The version is ready for prediction.
-                 * `Training` - The version is being trained. New versions.patch and versions.delete requests will fail if a version is in the Training state.
-                 * `Failed` - errorMessage should contain the details of the failure.
+      type: object
+      description: Represents a version of the model.
+      properties:
+        name:
+          type: string
+          description: Required. The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+        description:
+          type: string
+          description: Optional. The description specified for the model when it was created.
+        createTime:
+          description: Output only. Timestamp when this model was created.
+          type: string
+        updateTime:
+          description: Output only. Timestamp when this Model was most recently updated.
+          type: string
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        state:
+          enum:
+            - Draft
+            - Training
+            - Ready
+            - Failed
+          type: string
+          description: |
+             * `Draft` - The version state is unspecified.
+             * `Ready` - The version is ready for prediction.
+             * `Training` - The version is being trained. New versions.patch and versions.delete requests will fail if a version is in the Training state.
+             * `Failed` - errorMessage should contain the details of the failure.
+        modelMetadata:
+          $ref: '#/components/schemas/ModelMetadata'
   parameters:
     access_token:
       description: OAuth access token.
