@@ -945,7 +945,7 @@ paths:
     post:
       tags:
       - TrainingJob
-      description: Creates a TrainingJob
+      description: Creates a TrainingJob. When you train a model, several model evaluations are created for it, a summary evaluation, and one evaluation for each annotation.
       operationId: automl.namespaces.trainingJob.create
       requestBody:
         content:
@@ -1439,7 +1439,7 @@ components:
         - $ref: '#/components/schemas/TabularModelMetadata'
     TabularModelMetadata:
       type: object
-      description: Metadata for Tabular models, metadata is used to train the model
+      description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
       properties:
         modelType:
           description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
