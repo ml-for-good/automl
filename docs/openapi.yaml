@@ -47,7 +47,7 @@ tags:
   description: Operations about model
 - name: TrainingJob
   description: Operations about TrainingJob
-- name: Evaluate
+- name: Evaluation
   description: Operations about Evaluation
 - name: Predict
   description: Operations about Prediction
@@ -776,6 +776,23 @@ paths:
                   $ref: "#/components/schemas/ColumnSpec"
                 type: array
           description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}/annotationSpecs/{annotationSpec}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+      - $ref: '#/components/parameters/annotationSpec'
+    get:
+      operationId: automl.namespaces.datasets.annotationSpecs.get
+      description: Gets an AnnotationSpec.
+      tags:
+        - Dataset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnotationSpec'
   /namespaces/{namespace}/models:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -975,58 +992,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainingJob'
-  /evaluation:
+  /namespaces/{namespace}/models/{model}/versions/{version}/evaluations:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
     get:
       tags:
-      - Evaluate
-      summary: Get the Evaluation Result
-      description: Get the Evaluation Result
-      operationId: get_evaluation_res
-      parameters:
-      - name: evaluation_job_id
-        in: query
-        description: Evaluation Job ID
-        required: true
-        schema:
-          type: integer
+        - Evaluation
+      description: Lists model evaluations.
+      operationId: automl.projects.locations.models.version.evaluations.list
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJobResult'
-        400:
-          description: invalid param
-          content: {}
-    post:
-      tags:
-      - Evaluate
-      summary: Evaluate the ML model
-      description: Evaluate the ML model
-      operationId: evaluate_ml_model
-      parameters:
-      - name: ml_model_id
-        in: query
-        description: ML Model Id
-        required: true
-        schema:
-          type: integer
-      - name: evaluation_dataset_id
-        in: query
-        description: evaluation_dataset_id
-        schema:
-          type: integer
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobInfo'
-        400:
-          description: invalid params
-          content: {}
+                items: 
+                  $ref: "#/components/schemas/Evaluation"
+                type: array
+          description: Successful response
   /prediction:
     get:
       tags:
@@ -1187,27 +1171,6 @@ components:
           format: int64
         accuracy:
           type: string
-    EvaluationJobResult:
-      type: object
-      properties:
-        status:
-          type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
-          type: integer
-          format: int64
-        accuracy:
-          type: string
-    EvaluationJobInfo:
-      type: object
-      properties:
-        evaluation_job_id:
-          type: integer
-          format: int64
     JobState:
       enum:
         - UNSPECIFIED
@@ -1261,9 +1224,6 @@ components:
           type: integer
           format: int64
           description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
-        model:
-          type: string
-          description: The name of the Model resoure that produces this job
         trainingInput:
           $ref: '#/components/schemas/ModelMetadata'
         trainingOnput:
@@ -1433,6 +1393,24 @@ components:
             - CATEGORY
           type: string
           description: The data type of elements stored in the column.
+    AnnotationSpec:
+      description: A definition of an annotation spec.
+      properties:
+        displayName:
+          description: Required. The name of the annotation spec to show in the interface. The name can be up to 32 characters long and must match the regexp `[a-zA-Z0-9_]+`.
+          type: string
+        name:
+          description: Output only. Resource name of the annotation spec. 
+          type: string
+        createTime:
+          format: datetime
+          type: string
+          description: Output only. Timestamp when this AnnotationSpec was created.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Timestamp when AnnotationSpec was last updated.
+      type: object
     ModelMetadata:
       description: Union field model_metadata. The model metadata that is specific to the problem type. Must match the metadata type of the dataset used to train the model. model_metadata can be only one of the following
       oneOf:
@@ -1441,11 +1419,17 @@ components:
       type: object
       description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
       properties:
+        name:
+          type: string
+          description: The resource name of the Model.
         modelType:
           description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
           enum:
             - Tabular
           type: string
+        version:
+          type: string
+          description: The resource name of the Version.
         datasetId:
           description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
           type: string
@@ -1486,6 +1470,9 @@ components:
       properties:
         name:
           type: string
+          description: The resource name of the Model.
+        displayName:
+          type: string
           description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
         description:
           type: string
@@ -1514,7 +1501,10 @@ components:
       properties:
         name:
           type: string
-          description: Required. The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+          description: Required. The resource name of the Version.
+        displayName:
+          type: string
+          description: Required. The display name of the Version. 
         description:
           type: string
           description: Optional. The description specified for the model when it was created.
@@ -1541,6 +1531,24 @@ components:
              * `Failed` - errorMessage should contain the details of the failure.
         modelMetadata:
           $ref: '#/components/schemas/ModelMetadata'
+    EvaluationMetrics:
+      description: Evaluation metrics of the Model. 
+      oneOf:
+        - $ref: '#/components/schemas/ClassificationEvaluationMetrics'
+        - $ref: '#/components/schemas/RegressionEvaluationMetrics'
+    ClassificationEvaluationMetrics:
+      type: object
+    RegressionEvaluationMetrics:
+      type: object
+    Evaluation:
+      type: object
+      description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
+      properties:
+        name:
+          description: "Output only. Resource name of the model evaluation"
+          type: string
+        metrics:
+          $ref: '#/components/schemas/EvaluationMetrics'
   parameters:
     access_token:
       description: OAuth access token.
@@ -1601,6 +1609,15 @@ components:
         type: string
         maxLength: 1024
         example: my-tableSpec
+    annotationSpec:
+      name: annotationSpec
+      in: path
+      description: The id of the annotationSpec.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-annotationSpec
     model:
       name: model
       in: path
