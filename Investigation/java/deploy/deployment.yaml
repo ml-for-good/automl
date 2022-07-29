@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-demo
+  labels:
+    app: deploy-demo
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: deploy-demo
+  template:
+    metadata:
+      labels:
+        app: deploy-demo
+    spec:
+      containers:
+        - image: deploy:0.0.2
+          imagePullPolicy: IfNotPresent
+          name: deploy-demo
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deploy-demo
+  namespace: default
+  labels:
+    app: deploy-demo
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: deploy-demo
+  type: NodePort  
