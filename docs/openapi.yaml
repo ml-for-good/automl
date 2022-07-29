@@ -49,7 +49,7 @@ tags:
   description: Operations about TrainingJob
 - name: Evaluation
   description: Operations about Evaluation
-- name: Predict
+- name: PredictionJob
   description: Operations about Prediction
 paths:
   /oauth2/authorize:
@@ -194,7 +194,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatedNamespace'
+              $ref: '#/components/schemas/Namespace'
       responses:
         '200':
           description: OK
@@ -231,7 +231,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NamespaceList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Namespace'
   /roles:
     get:
       tags:
@@ -638,12 +640,7 @@ paths:
                 type: object
                 properties:
                   uri:
-                    oneOf:
-                      - $ref: '#/components/schemas/URI'
-                      - type: array
-                        description: multiple files
-                        items:
-                          $ref: '#/components/schemas/URI'
+                    $ref: "#/components/schemas/URI"
         400:
           description: Invalid input
           content: {}
@@ -1011,74 +1008,43 @@ paths:
                   $ref: "#/components/schemas/Evaluation"
                 type: array
           description: Successful response
-  /prediction:
-    get:
-      tags:
-      - Predict
-      summary: Get the Prediction Result
-      description: Get the Prediction Result
-      operationId: get_prediction_res
-      parameters:
-      - name: prediction_job_id
-        in: query
-        description: Prediction Job ID
-        required: true
-        schema:
-          type: integer
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PredictionJobResult'
-        400:
-          description: invalid param
-          content: {}
+  /namespaces/{namespace}/predictionJob:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
     post:
       tags:
-      - Predict
-      summary: Prediction by the ML model
-      description: Prediction by the ML model
-      operationId: predict_by_ml_model
-      parameters:
-      - name: ml_model_id
-        in: query
-        description: ML Model Id
-        required: true
-        schema:
-          type: integer
-      - name: prediction_dataset_id
-        in: query
-        description: prediction_dataset_id
-        schema:
-          type: integer
+      - PredictionJob
+      description: Creates a predictionJob.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictionJob"
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PredictionJobInfo'
-        400:
-          description: invalid params
-          content: {}
+                $ref: "#/components/schemas/PredictionJob"
+          description: Successful response
+  /namespaces/{namespace}/predictionJob/{job}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/job'
+    get:
+      tags:
+      - PredictionJob
+      description: Gets a predictionJob
+      operationId: automl.namespaces.predictionJob.get
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionJob'
 components:
   schemas:
-    CreatedNamespace:
-      type: object
-      properties:
-        ownerName:
-          description: The owner of the namespace.
-          type: string
-        description:
-          description: The description of the namespace.
-          type: string
-      required:
-        - ownerName
-      example:
-        ownerName: me
-        description: My first namespace!
     Namespace:
       type: object
       properties:
@@ -1105,13 +1071,6 @@ components:
         updatedAt: '2019-05-09T19:49:24.201361Z'
         ownerName: me
         description: My first namespace!
-    NamespaceList:
-      type: object
-      properties:
-        namespaces:
-          type: array
-          items:
-            $ref: '#/components/schemas/Namespace'
     GeneralError:
       type: object
       properties:
@@ -1141,36 +1100,6 @@ components:
         properties:
           rootCause:
             type: string
-    ResponseMsg:
-      type: object
-      properties:
-        status:
-          type: string
-          format: success
-        message:
-          type: string
-          format: message string
-    PredictionJobInfo:
-      type: object
-      properties:
-        prediction_job_id:
-          type: integer
-          format: int64
-    PredictionJobResult:
-      type: object
-      properties:
-        status:
-          type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
-          type: integer
-          format: int64
-        accuracy:
-          type: string
     JobState:
       enum:
         - UNSPECIFIED
@@ -1228,6 +1157,67 @@ components:
           $ref: '#/components/schemas/ModelMetadata'
         trainingOnput:
           type: object
+    PredictionJob:
+      type: object
+      properties:
+        jobId:
+          type: string
+          description: The user-specified id of the job.
+        createTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was created.
+        startTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
+        endTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was most recently updated.
+        state:
+          $ref: '#/components/schemas/JobState'
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        jobPosition:
+          type: integer
+          format: int64
+          description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
+        predictionInput:
+          $ref: '#/components/schemas/PredictonInput'
+        predictionOutput:
+          type: object
+    DataFormat:
+      type: string
+      description: |
+         The format used to separate data instances in the source and destination files. 
+         * `UNSPECIFIED` - Unspecified format.
+         * `JSON` - Each line of the file is a JSON dictionary representing one record.
+         * `TF_RECORD` - The source file is a TFRecord file. Currently available only for input data.
+         * `TF_RECORD_GZIP` - The source file is a GZIP-compressed TFRecord file. Currently available only for input data.
+         * `CSV` - 	Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
+      enum:
+        - UNSPECIFIED
+        - JSON
+        - TF_RECORD
+        - TF_RECORD_GZIP
+        - CSV
+    PredictonInput:
+      type: object
+      properties:
+        dataFormat:
+          # Required. The format of the input data files.
+          $ref: "#/components/schemas/DataFormat"
+        ouputDataFormat:
+          # Optional. Format of the output data files, defaults to JSON.
+          $ref: "#/components/schemas/DataFormat"
+        inputPaths:
+          $ref: "#/components/schemas/URI"
     Credentials:
       type: object
       properties:
@@ -1331,9 +1321,16 @@ components:
               example:
                 - "read:users"
     URI:
-      type: string
-      description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
-      example: s3://datasets/train.csv
+      oneOf:
+        - type: string
+          description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+          example: s3://datasets/train.csv
+        - type: array
+          description: multiple files
+          items:
+            type: string
+            description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+            example: s3://datasets/train.csv
     Dataset:
       description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
       properties:
