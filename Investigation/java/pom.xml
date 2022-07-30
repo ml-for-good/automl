@@ -1,0 +1,398 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.chen</groupId>
+  <artifactId>chen-ddd</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0.0</version>
+
+  <properties>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <java.version>1.8</java.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <jddd-core.version>0.1.0</jddd-core.version>
+    <javax.inject.version>1</javax.inject.version>
+    <moneta-core.version>1.4.2</moneta-core.version>
+    <jackson-datatype-money.version>1.2.2</jackson-datatype-money.version>
+
+    <spring-boot.version>2.6.7</spring-boot.version>
+
+    <mybatis-plus.version>3.5.1</mybatis-plus.version>
+    <mybatis-plus-generator.version>3.5.2</mybatis-plus-generator.version>
+    <velocity-engine-core.version>2.0</velocity-engine-core.version>
+
+    <modelmapper.version>2.3.5</modelmapper.version>
+    <mapstruct.version>1.4.2.Final</mapstruct.version>
+    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+
+    <swagger2.version>1.5.22</swagger2.version>
+    <knife4j.version>3.0.3</knife4j.version>
+    <springdoc-openapi.version>1.6.8</springdoc-openapi.version>
+
+    <commons-lang3.version>3.8.1</commons-lang3.version>
+    <commons-text.version>1.8</commons-text.version>
+    <commons-collections4.version>4.1</commons-collections4.version>
+    <commons-beanutils.version>1.9.4</commons-beanutils.version>
+    <commons-codec.version>1.11</commons-codec.version>
+    <commons-fileupload.version>1.3.3</commons-fileupload.version>
+    <commons-io.version>2.6</commons-io.version>
+    <commons-net.version>3.6</commons-net.version>
+    <commons-crypto.version>1.1.0</commons-crypto.version>
+    <guava.version>20.0</guava.version>
+    <fastjson.version>1.2.68.noneautotype</fastjson.version>
+
+    <mockito-all.version>1.10.19</mockito-all.version>
+    <archunit-junit4.version>0.14.1</archunit-junit4.version>
+    <maven-antrun.version>1.8</maven-antrun.version>
+    <cucumber.version>6.10.3</cucumber.version>
+    <archunit-junit5.version>0.20.0</archunit-junit5.version>
+    <cucumber-reporting.version>5.5.3</cucumber-reporting.version>
+
+    <embedded-redis.version>0.7.3</embedded-redis.version>
+  </properties>
+
+  <modules>
+    <module>ddd-core</module>
+    <module>ddd-infrastructure</module>
+    <module>ddd-client</module>
+    <module>ddd-interface</module>
+    <module>ddd-configuration</module>
+    <module>ddd-start</module>
+    <module>ddd-test</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok-mapstruct-binding</artifactId>
+      <version>${lombok-mapstruct-binding.version}</version>
+    </dependency>
+
+  </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-core-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-core-order</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-infrastructure</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-client</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-interface</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-configuration</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-start</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.chen</groupId>
+        <artifactId>ddd-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>${javax.inject.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jddd</groupId>
+        <artifactId>jddd-core</artifactId>
+        <version>${jddd-core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.javamoney.moneta</groupId>
+        <artifactId>moneta-core</artifactId>
+        <version>${moneta-core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.zalando</groupId>
+        <artifactId>jackson-datatype-money</artifactId>
+        <version>${jackson-datatype-money.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+
+      <!-- mybatis-plus -->
+      <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-boot-starter</artifactId>
+        <version>${mybatis-plus.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-boot-starter-test</artifactId>
+        <version>${mybatis-plus.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.baomidou</groupId>
+        <artifactId>mybatis-plus-generator</artifactId>
+        <version>${mybatis-plus-generator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-engine-core</artifactId>
+        <version>${velocity-engine-core.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.modelmapper</groupId>
+        <artifactId>modelmapper</artifactId>
+        <version>${modelmapper.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-jdk8</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>${mapstruct.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>${swagger2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.xiaoymin</groupId>
+        <artifactId>knife4j-spring-boot-starter</artifactId>
+        <version>${knife4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.xiaoymin</groupId>
+        <artifactId>knife4j-springdoc-ui</artifactId>
+        <version>${knife4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-ui</artifactId>
+        <version>${springdoc-openapi.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${commons-text.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${commons-collections4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>${commons-beanutils.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons-codec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-fileupload</groupId>
+        <artifactId>commons-fileupload</artifactId>
+        <version>${commons-fileupload.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-net</groupId>
+        <artifactId>commons-net</artifactId>
+        <version>${commons-net.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-crypto</artifactId>
+        <version>${commons-crypto.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>fastjson</artifactId>
+        <version>${fastjson.version}</version>
+      </dependency>
+
+      <!-- 测试依赖 -->
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <version>${mockito-all.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!--Cucumber, Gherkin-->
+      <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-jvm</artifactId>
+        <version>${cucumber.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.masterthought</groupId>
+        <artifactId>cucumber-reporting</artifactId>
+        <version>${cucumber-reporting.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit5</artifactId>
+        <version>${archunit-junit5.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>it.ozimov</groupId>
+        <artifactId>embedded-redis</artifactId>
+        <version>${embedded-redis.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <!--测试-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+        <configuration>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
+      </plugin>
+      <!--打包源码-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>${maven-antrun.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+  </build>
+
+  <repositories>
+    <!--阿里云私服-->
+    <repository>
+      <id>aliyun-maven</id>
+      <name>aliyun maven repository</name>
+      <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <!--阿里云私服-->
+    <pluginRepository>
+      <id>aliyun-maven</id>
+      <name>aliyun maven repository</name>
+      <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+</project>
