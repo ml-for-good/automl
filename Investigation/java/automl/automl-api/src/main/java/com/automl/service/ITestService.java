@@ -1,0 +1,1 @@
+package com.automl.service;/** * @auther kayc * @date 2022/3/13 7:53 PM */public interface ITestService<T> {  String sayHello() throws Exception;}
