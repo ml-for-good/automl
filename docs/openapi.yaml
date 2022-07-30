@@ -1008,6 +1008,26 @@ paths:
                   $ref: "#/components/schemas/Evaluation"
                 type: array
           description: Successful response
+  /namespaces/{namespace}/models/{model}/versions/{version}/evaluations/{evaluation}/slices:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
+    - $ref: '#/components/parameters/evaluation'
+    get:
+      tags:
+        - Evaluation
+      description: Lists ModelEvaluationSlices in a ModelEvaluation.
+      operationId: automl.projects.locations.models.version.evaluations.slices.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/EvaluationSlice"
+                type: array
+          description: Successful response
   /namespaces/{namespace}/predictionJob:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1189,9 +1209,9 @@ components:
           format: int64
           description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
         predictionInput:
-          $ref: '#/components/schemas/PredictonInput'
+          $ref: '#/components/schemas/PredictionInput'
         predictionOutput:
-          type: object
+          $ref: '#/components/schemas/PredictionOnput'
     DataFormat:
       type: string
       description: |
@@ -1207,7 +1227,7 @@ components:
         - TF_RECORD
         - TF_RECORD_GZIP
         - CSV
-    PredictonInput:
+    PredictionInput:
       type: object
       properties:
         dataFormat:
@@ -1218,6 +1238,41 @@ components:
           $ref: "#/components/schemas/DataFormat"
         inputPaths:
           $ref: "#/components/schemas/URI"
+        modelName:
+          type: string
+          description: The name of the Model resoure that produces the predictions via this job,
+        versionName:
+          type: string
+          description: specify a version of the model to use. 
+    DoubleRange:
+      description: A range between two double numbers.
+      properties:
+        end:
+          description: End of the range, exclusive.
+          format: double
+          type: number
+        start:
+          description: Start of the range, inclusive.
+          format: double
+          type: number
+      type: object
+    PredictionOutput:
+      description: Contains prediction details specific to Tabular.
+      properties:
+        baselineScore:
+          description: Output only. Stores the prediction score for the baseline example, which is defined as the example with all values set to their baseline values. This is used as part of the Sampled Shapley explanation of the model's prediction. This field is populated only when feature importance is requested. For regression models, this holds the baseline prediction for the baseline example. For classification models, this holds the baseline prediction for the baseline example for the argmax class.
+          format: float
+          type: number
+        predictionInterval:
+          $ref: "#/components/schemas/DoubleRange"
+          description: Output only. Only populated when target_column_spec has FLOAT64 data type. An interval in which the exactly correct target value has 95% chance to be in.
+        score:
+          description: Output only. A confidence estimate between 0.0 and 1.0, inclusive. A higher value means greater confidence in the returned value. For target_column_spec of FLOAT64 data type the score is not populated.
+          format: float
+          type: number
+        value:
+          description: "The predicted value of the row's target_column. The value depends on the column's DataType: * CATEGORY - the predicted (with the above confidence `score`) CATEGORY value. * FLOAT64 - the predicted (with above `prediction_interval`) FLOAT64 value."
+      type: object
     Credentials:
       type: object
       properties:
@@ -1546,6 +1601,8 @@ components:
           type: string
         metrics:
           $ref: '#/components/schemas/EvaluationMetrics'
+    EvaluationSlice:
+      type: object
   parameters:
     access_token:
       description: OAuth access token.
@@ -1633,6 +1690,22 @@ components:
         type: string
         maxLength: 1024
         example: v1
+    evaluation:
+      name: evaluation
+      in: path
+      description: The id of the evaluation.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    slice:
+      name: slice
+      in: path
+      description: The id of the slice.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
   responses:
     NotFound:
       description: The specified resource was not found
