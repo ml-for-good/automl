@@ -51,6 +51,8 @@ tags:
   description: Operations about Evaluation
 - name: PredictionJob
   description: Operations about Prediction
+- name: Endpoint
+  description: Operations about Endpoint
 paths:
   /oauth2/authorize:
     get:
@@ -1063,6 +1065,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PredictionJob'
+  /namespaces/{namespace}/endpoints:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - Endpoint
+      description: Creates an Endpoint, If successful, the response body contains a newly created instance of Operation.
+      operationId: automl.namespaces.endpoints.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Endpoint"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+    get:
+      tags:
+      - Endpoint
+      description: Lists endpoints in the namespace.
+      operationId: automl.namespaces.endpoints.list
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Endpoint"
+                type: array
+          description: Successful response
 components:
   schemas:
     Namespace:
@@ -1211,7 +1250,7 @@ components:
         predictionInput:
           $ref: '#/components/schemas/PredictionInput'
         predictionOutput:
-          $ref: '#/components/schemas/PredictionOnput'
+          $ref: '#/components/schemas/PredictionOutput'
     DataFormat:
       type: string
       description: |
@@ -1602,6 +1641,49 @@ components:
         metrics:
           $ref: '#/components/schemas/EvaluationMetrics'
     EvaluationSlice:
+      type: object
+    Endpoint:
+      type: object
+    Status:
+      description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
+      properties:
+        code:
+          description: The status code, which should be an enum value
+          format: int32
+          type: integer
+        details:
+          description: A list of messages that carry the error details. There is a common set of message types for APIs to use.
+          items:
+            additionalProperties:
+              description: Properties of the object. Contains field @type with type URL.
+            type: object
+          type: array
+        message:
+          description: A developer-facing error message, which should be in English. 
+          type: string
+      type: object
+    Operation:
+      description: This resource represents a long-running operation that is the result of a network API call.
+      properties:
+        done:
+          description: If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.
+          type: boolean
+        error:
+          description: The error result of the operation in case of failure or cancellation.
+          $ref: '#/components/schemas/Status'
+        metadata:
+          additionalProperties:
+            description: Properties of the object. Contains field @type with type URL.
+          description: Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.
+          type: object
+        name:
+          description: The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.
+          type: string
+        response:
+          additionalProperties:
+            description: Properties of the object. Contains field @type with type URL.
+          description: The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+          type: object
       type: object
   parameters:
     access_token:
