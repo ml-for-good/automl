@@ -10,24 +10,24 @@ import org.junit.jupiter.api.Test;
  * @version 1.0 {@code @date} 2022/7/18
  */
 public class ConsumerTest {
-  @Test
-  public void simpleConsumerTest() {
-    Consumer consumer =
-        new Consumer(
-            KafkaProperties.KAFKA_SERVER_URL + ":" + KafkaProperties.KAFKA_SERVER_PORT,
-            KafkaProperties.TOPIC,
-            KafkaProperties.KAFKA_GROUP_ID);
-    for (ConsumerRecord<String, String> consumerRecord : consumer.configConsumer()) {
-      System.out.println(
-          KafkaProperties.KAFKA_GROUP_ID
-              + " received message : from partition "
-              + consumerRecord.partition()
-              + ", ("
-              + consumerRecord.key()
-              + ", "
-              + consumerRecord.value()
-              + ") at offset "
-              + consumerRecord.offset());
+    @Test
+    public void simpleConsumerTest() {
+        Consumer consumer =
+            new Consumer(
+                KafkaProperties.KAFKA_SERVER_URL + ":" + KafkaProperties.KAFKA_SERVER_PORT,
+                KafkaProperties.TOPIC,
+                KafkaProperties.KAFKA_GROUP_ID);
+        for (ConsumerRecord<String, String> consumerRecord : consumer.configConsumer()) {
+            System.out.println(
+                KafkaProperties.KAFKA_GROUP_ID
+                    + " received message : from partition "
+                    + consumerRecord.partition()
+                    + ", ("
+                    + consumerRecord.key()
+                    + ", "
+                    + consumerRecord.value()
+                    + ") at offset "
+                    + consumerRecord.offset());
+        }
     }
-  }
 }
