@@ -47,10 +47,12 @@ tags:
   description: Operations about model
 - name: TrainingJob
   description: Operations about TrainingJob
-- name: Evaluate
+- name: Evaluation
   description: Operations about Evaluation
-- name: Predict
+- name: PredictionJob
   description: Operations about Prediction
+- name: Endpoint
+  description: Operations about Endpoint
 paths:
   /oauth2/authorize:
     get:
@@ -194,7 +196,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatedNamespace'
+              $ref: '#/components/schemas/Namespace'
       responses:
         '200':
           description: OK
@@ -231,7 +233,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NamespaceList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Namespace'
   /roles:
     get:
       tags:
@@ -638,12 +642,7 @@ paths:
                 type: object
                 properties:
                   uri:
-                    oneOf:
-                      - $ref: '#/components/schemas/URI'
-                      - type: array
-                        description: multiple files
-                        items:
-                          $ref: '#/components/schemas/URI'
+                    $ref: "#/components/schemas/URI"
         400:
           description: Invalid input
           content: {}
@@ -776,6 +775,23 @@ paths:
                   $ref: "#/components/schemas/ColumnSpec"
                 type: array
           description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}/annotationSpecs/{annotationSpec}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+      - $ref: '#/components/parameters/annotationSpec'
+    get:
+      operationId: automl.namespaces.datasets.annotationSpecs.get
+      description: Gets an AnnotationSpec.
+      tags:
+        - Dataset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnotationSpec'
   /namespaces/{namespace}/models:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -945,7 +961,7 @@ paths:
     post:
       tags:
       - TrainingJob
-      description: Creates a TrainingJob
+      description: Creates a TrainingJob. When you train a model, several model evaluations are created for it, a summary evaluation, and one evaluation for each annotation.
       operationId: automl.namespaces.trainingJob.create
       requestBody:
         content:
@@ -975,126 +991,119 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainingJob'
-  /evaluation:
+  /namespaces/{namespace}/models/{model}/versions/{version}/evaluations:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
     get:
       tags:
-      - Evaluate
-      summary: Get the Evaluation Result
-      description: Get the Evaluation Result
-      operationId: get_evaluation_res
-      parameters:
-      - name: evaluation_job_id
-        in: query
-        description: Evaluation Job ID
-        required: true
-        schema:
-          type: integer
+        - Evaluation
+      description: Lists model evaluations.
+      operationId: automl.projects.locations.models.version.evaluations.list
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJobResult'
-        400:
-          description: invalid param
-          content: {}
-    post:
-      tags:
-      - Evaluate
-      summary: Evaluate the ML model
-      description: Evaluate the ML model
-      operationId: evaluate_ml_model
-      parameters:
-      - name: ml_model_id
-        in: query
-        description: ML Model Id
-        required: true
-        schema:
-          type: integer
-      - name: evaluation_dataset_id
-        in: query
-        description: evaluation_dataset_id
-        schema:
-          type: integer
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobInfo'
-        400:
-          description: invalid params
-          content: {}
-  /prediction:
+                items: 
+                  $ref: "#/components/schemas/Evaluation"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/models/{model}/versions/{version}/evaluations/{evaluation}/slices:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
+    - $ref: '#/components/parameters/evaluation'
     get:
       tags:
-      - Predict
-      summary: Get the Prediction Result
-      description: Get the Prediction Result
-      operationId: get_prediction_res
-      parameters:
-      - name: prediction_job_id
-        in: query
-        description: Prediction Job ID
-        required: true
-        schema:
-          type: integer
+        - Evaluation
+      description: Lists ModelEvaluationSlices in a ModelEvaluation.
+      operationId: automl.projects.locations.models.version.evaluations.slices.list
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PredictionJobResult'
-        400:
-          description: invalid param
-          content: {}
+                items: 
+                  $ref: "#/components/schemas/EvaluationSlice"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/predictionJob:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
     post:
       tags:
-      - Predict
-      summary: Prediction by the ML model
-      description: Prediction by the ML model
-      operationId: predict_by_ml_model
-      parameters:
-      - name: ml_model_id
-        in: query
-        description: ML Model Id
-        required: true
-        schema:
-          type: integer
-      - name: prediction_dataset_id
-        in: query
-        description: prediction_dataset_id
-        schema:
-          type: integer
+      - PredictionJob
+      description: Creates a predictionJob.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictionJob"
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PredictionJobInfo'
-        400:
-          description: invalid params
-          content: {}
+                $ref: "#/components/schemas/PredictionJob"
+          description: Successful response
+  /namespaces/{namespace}/predictionJob/{job}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/job'
+    get:
+      tags:
+      - PredictionJob
+      description: Gets a predictionJob
+      operationId: automl.namespaces.predictionJob.get
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionJob'
+  /namespaces/{namespace}/endpoints:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - Endpoint
+      description: Creates an Endpoint, If successful, the response body contains a newly created instance of Operation.
+      operationId: automl.namespaces.endpoints.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Endpoint"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+    get:
+      tags:
+      - Endpoint
+      description: Lists endpoints in the namespace.
+      operationId: automl.namespaces.endpoints.list
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Endpoint"
+                type: array
+          description: Successful response
 components:
   schemas:
-    CreatedNamespace:
-      type: object
-      properties:
-        ownerName:
-          description: The owner of the namespace.
-          type: string
-        description:
-          description: The description of the namespace.
-          type: string
-      required:
-        - ownerName
-      example:
-        ownerName: me
-        description: My first namespace!
     Namespace:
       type: object
       properties:
@@ -1121,13 +1130,6 @@ components:
         updatedAt: '2019-05-09T19:49:24.201361Z'
         ownerName: me
         description: My first namespace!
-    NamespaceList:
-      type: object
-      properties:
-        namespaces:
-          type: array
-          items:
-            $ref: '#/components/schemas/Namespace'
     GeneralError:
       type: object
       properties:
@@ -1157,57 +1159,6 @@ components:
         properties:
           rootCause:
             type: string
-    ResponseMsg:
-      type: object
-      properties:
-        status:
-          type: string
-          format: success
-        message:
-          type: string
-          format: message string
-    PredictionJobInfo:
-      type: object
-      properties:
-        prediction_job_id:
-          type: integer
-          format: int64
-    PredictionJobResult:
-      type: object
-      properties:
-        status:
-          type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
-          type: integer
-          format: int64
-        accuracy:
-          type: string
-    EvaluationJobResult:
-      type: object
-      properties:
-        status:
-          type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
-          type: integer
-          format: int64
-        accuracy:
-          type: string
-    EvaluationJobInfo:
-      type: object
-      properties:
-        evaluation_job_id:
-          type: integer
-          format: int64
     JobState:
       enum:
         - UNSPECIFIED
@@ -1261,13 +1212,106 @@ components:
           type: integer
           format: int64
           description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
-        model:
-          type: string
-          description: The name of the Model resoure that produces this job
         trainingInput:
           $ref: '#/components/schemas/ModelMetadata'
         trainingOnput:
           type: object
+    PredictionJob:
+      type: object
+      properties:
+        jobId:
+          type: string
+          description: The user-specified id of the job.
+        createTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was created.
+        startTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
+        endTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was most recently updated.
+        state:
+          $ref: '#/components/schemas/JobState'
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        jobPosition:
+          type: integer
+          format: int64
+          description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
+        predictionInput:
+          $ref: '#/components/schemas/PredictionInput'
+        predictionOutput:
+          $ref: '#/components/schemas/PredictionOutput'
+    DataFormat:
+      type: string
+      description: |
+         The format used to separate data instances in the source and destination files. 
+         * `UNSPECIFIED` - Unspecified format.
+         * `JSON` - Each line of the file is a JSON dictionary representing one record.
+         * `TF_RECORD` - The source file is a TFRecord file. Currently available only for input data.
+         * `TF_RECORD_GZIP` - The source file is a GZIP-compressed TFRecord file. Currently available only for input data.
+         * `CSV` - 	Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
+      enum:
+        - UNSPECIFIED
+        - JSON
+        - TF_RECORD
+        - TF_RECORD_GZIP
+        - CSV
+    PredictionInput:
+      type: object
+      properties:
+        dataFormat:
+          # Required. The format of the input data files.
+          $ref: "#/components/schemas/DataFormat"
+        ouputDataFormat:
+          # Optional. Format of the output data files, defaults to JSON.
+          $ref: "#/components/schemas/DataFormat"
+        inputPaths:
+          $ref: "#/components/schemas/URI"
+        modelName:
+          type: string
+          description: The name of the Model resoure that produces the predictions via this job,
+        versionName:
+          type: string
+          description: specify a version of the model to use. 
+    DoubleRange:
+      description: A range between two double numbers.
+      properties:
+        end:
+          description: End of the range, exclusive.
+          format: double
+          type: number
+        start:
+          description: Start of the range, inclusive.
+          format: double
+          type: number
+      type: object
+    PredictionOutput:
+      description: Contains prediction details specific to Tabular.
+      properties:
+        baselineScore:
+          description: Output only. Stores the prediction score for the baseline example, which is defined as the example with all values set to their baseline values. This is used as part of the Sampled Shapley explanation of the model's prediction. This field is populated only when feature importance is requested. For regression models, this holds the baseline prediction for the baseline example. For classification models, this holds the baseline prediction for the baseline example for the argmax class.
+          format: float
+          type: number
+        predictionInterval:
+          $ref: "#/components/schemas/DoubleRange"
+          description: Output only. Only populated when target_column_spec has FLOAT64 data type. An interval in which the exactly correct target value has 95% chance to be in.
+        score:
+          description: Output only. A confidence estimate between 0.0 and 1.0, inclusive. A higher value means greater confidence in the returned value. For target_column_spec of FLOAT64 data type the score is not populated.
+          format: float
+          type: number
+        value:
+          description: "The predicted value of the row's target_column. The value depends on the column's DataType: * CATEGORY - the predicted (with the above confidence `score`) CATEGORY value. * FLOAT64 - the predicted (with above `prediction_interval`) FLOAT64 value."
+      type: object
     Credentials:
       type: object
       properties:
@@ -1371,9 +1415,16 @@ components:
               example:
                 - "read:users"
     URI:
-      type: string
-      description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
-      example: s3://datasets/train.csv
+      oneOf:
+        - type: string
+          description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+          example: s3://datasets/train.csv
+        - type: array
+          description: multiple files
+          items:
+            type: string
+            description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+            example: s3://datasets/train.csv
     Dataset:
       description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
       properties:
@@ -1433,19 +1484,43 @@ components:
             - CATEGORY
           type: string
           description: The data type of elements stored in the column.
+    AnnotationSpec:
+      description: A definition of an annotation spec.
+      properties:
+        displayName:
+          description: Required. The name of the annotation spec to show in the interface. The name can be up to 32 characters long and must match the regexp `[a-zA-Z0-9_]+`.
+          type: string
+        name:
+          description: Output only. Resource name of the annotation spec. 
+          type: string
+        createTime:
+          format: datetime
+          type: string
+          description: Output only. Timestamp when this AnnotationSpec was created.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Timestamp when AnnotationSpec was last updated.
+      type: object
     ModelMetadata:
       description: Union field model_metadata. The model metadata that is specific to the problem type. Must match the metadata type of the dataset used to train the model. model_metadata can be only one of the following
       oneOf:
         - $ref: '#/components/schemas/TabularModelMetadata'
     TabularModelMetadata:
       type: object
-      description: Metadata for Tabular models, metadata is used to train the model
+      description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
       properties:
+        name:
+          type: string
+          description: The resource name of the Model.
         modelType:
           description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
           enum:
             - Tabular
           type: string
+        version:
+          type: string
+          description: The resource name of the Version.
         datasetId:
           description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
           type: string
@@ -1486,6 +1561,9 @@ components:
       properties:
         name:
           type: string
+          description: The resource name of the Model.
+        displayName:
+          type: string
           description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
         description:
           type: string
@@ -1514,7 +1592,10 @@ components:
       properties:
         name:
           type: string
-          description: Required. The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+          description: Required. The resource name of the Version.
+        displayName:
+          type: string
+          description: Required. The display name of the Version. 
         description:
           type: string
           description: Optional. The description specified for the model when it was created.
@@ -1541,6 +1622,69 @@ components:
              * `Failed` - errorMessage should contain the details of the failure.
         modelMetadata:
           $ref: '#/components/schemas/ModelMetadata'
+    EvaluationMetrics:
+      description: Evaluation metrics of the Model. 
+      oneOf:
+        - $ref: '#/components/schemas/ClassificationEvaluationMetrics'
+        - $ref: '#/components/schemas/RegressionEvaluationMetrics'
+    ClassificationEvaluationMetrics:
+      type: object
+    RegressionEvaluationMetrics:
+      type: object
+    Evaluation:
+      type: object
+      description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
+      properties:
+        name:
+          description: "Output only. Resource name of the model evaluation"
+          type: string
+        metrics:
+          $ref: '#/components/schemas/EvaluationMetrics'
+    EvaluationSlice:
+      type: object
+    Endpoint:
+      type: object
+    Status:
+      description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
+      properties:
+        code:
+          description: The status code, which should be an enum value
+          format: int32
+          type: integer
+        details:
+          description: A list of messages that carry the error details. There is a common set of message types for APIs to use.
+          items:
+            additionalProperties:
+              description: Properties of the object. Contains field @type with type URL.
+            type: object
+          type: array
+        message:
+          description: A developer-facing error message, which should be in English. 
+          type: string
+      type: object
+    Operation:
+      description: This resource represents a long-running operation that is the result of a network API call.
+      properties:
+        done:
+          description: If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.
+          type: boolean
+        error:
+          description: The error result of the operation in case of failure or cancellation.
+          $ref: '#/components/schemas/Status'
+        metadata:
+          additionalProperties:
+            description: Properties of the object. Contains field @type with type URL.
+          description: Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.
+          type: object
+        name:
+          description: The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.
+          type: string
+        response:
+          additionalProperties:
+            description: Properties of the object. Contains field @type with type URL.
+          description: The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+          type: object
+      type: object
   parameters:
     access_token:
       description: OAuth access token.
@@ -1601,6 +1745,15 @@ components:
         type: string
         maxLength: 1024
         example: my-tableSpec
+    annotationSpec:
+      name: annotationSpec
+      in: path
+      description: The id of the annotationSpec.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-annotationSpec
     model:
       name: model
       in: path
@@ -1619,6 +1772,22 @@ components:
         type: string
         maxLength: 1024
         example: v1
+    evaluation:
+      name: evaluation
+      in: path
+      description: The id of the evaluation.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    slice:
+      name: slice
+      in: path
+      description: The id of the slice.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
   responses:
     NotFound:
       description: The specified resource was not found
