@@ -1,5 +1,6 @@
-import autokeras as ak
-import tensorflow as tf
+# import autokeras as ak
+# import tensorflow as tf
+import numpy as np
 
 REGRESSION = 'regression'
 CLASSIFICATION = 'classification'
@@ -10,78 +11,78 @@ TFLITE = 'tflite'
 ONNX = 'onnx'
 
 
-class StructuredDataModel:
-    """
-      Work flow:
-       ┌───────────────┐
-       │ Make datasets │
-       └───────┬───────┘
-               │
-       ┌───────▼───────┐
-       │ Train model   │
-       └───────┬───────┘
-               │
-       ┌───────▼────────┐
-       │ Evaluate model │
-       └───────┬────────┘
-               │
-      ┌────────▼──────────┐
-      │ Export best model │
-      └────────┬──────────┘
-               │
-        ┌──────▼────────┐          ▼
-        │ Serving model │
-        └───────────────┘
-      Train model from structured data, it will tune hparams automatically and do some nas searches, it will record training logs in a csv file.
-      Args:
-        max_trials: Int. The maximum number of different Keras Models to try.
-          The search may finish before reaching the max_trials.
-        task: task type.
-    """
+# class StructuredDataModel:
+#     """
+#       Work flow:
+#        ┌───────────────┐
+#        │ Make datasets │
+#        └───────┬───────┘
+#                │
+#        ┌───────▼───────┐
+#        │ Train model   │
+#        └───────┬───────┘
+#                │
+#        ┌───────▼────────┐
+#        │ Evaluate model │
+#        └───────┬────────┘
+#                │
+#       ┌────────▼──────────┐
+#       │ Export best model │
+#       └────────┬──────────┘
+#                │
+#         ┌──────▼────────┐          ▼
+#         │ Serving model │
+#         └───────────────┘
+#       Train model from structured data, it will tune hparams automatically and do some nas searches, it will record training logs in a csv file.
+#       Args:
+#         max_trials: Int. The maximum number of different Keras Models to try.
+#           The search may finish before reaching the max_trials.
+#         task: task type.
+#     """
 
-    def __init__(self, max_trials, task):
-        if task == REGRESSION:
-            self.model = ak.StructuredDataRegressor(max_trials=max_trials)
-        elif task == CLASSIFICATION:
-            self.model = ak.StructuredDataClassifier(max_trials=max_trials)
+#     def __init__(self, max_trials, task):
+#         if task == REGRESSION:
+#             self.model = ak.StructuredDataRegressor(max_trials=max_trials)
+#         elif task == CLASSIFICATION:
+#             self.model = ak.StructuredDataClassifier(max_trials=max_trials)
 
-        else:
-            raise NotImplemented
-        self.callbacks = [
-            tf.keras.callbacks.CSVLogger(
-                tf.io.gfile.join(self.model.directory, 'training_log.csv')),
-            tf.keras.callbacks.ProgbarLogger()
-        ]
+#         else:
+#             raise NotImplemented
+#         self.callbacks = [
+#             tf.keras.callbacks.CSVLogger(
+#                 tf.io.gfile.join(self.model.directory, 'training_log.csv')),
+#             tf.keras.callbacks.ProgbarLogger()
+#         ]
 
-    def train(self, dataset, batch_size=8, epochs=10):
-        """
-          Args:
-            dataset: Train dataset, tf dataset format.
-            batch_size: Train batch size, integer.
-            epochs: Train loops, integer.
-        """
-        return self.model.fit(dataset,
-                              epochs=epochs,
-                              batch_size=batch_size,
-                              callbacks=self.callbacks)
+#     def train(self, dataset, batch_size=8, epochs=10):
+#         """
+#           Args:
+#             dataset: Train dataset, tf dataset format.
+#             batch_size: Train batch size, integer.
+#             epochs: Train loops, integer.
+#         """
+#         return self.model.fit(dataset,
+#                               epochs=epochs,
+#                               batch_size=batch_size,
+#                               callbacks=self.callbacks)
 
-    def evaluate(self, dataset):
-        return self.model.evaluate(dataset)
+#     def evaluate(self, dataset):
+#         return self.model.evaluate(dataset)
 
-    def export(self, format=SAVED_MODEL):
-        model = self.model.export_model()
-        if format == SAVED_MODEL:
-            tf.saved_model.save(
-                model, tf.io.gfile.join(self.model.directory, 'saved_model'))
-        elif format == TFLITE:
-            converter = tf.lite.TFLiteConverter.from_keras_model(model)
-            converter.optimizations = {tf.lite.Optimize.DEFAULT}
-            tflite_model = converter.convert()
-            tf.io.write_file(
-                tf.io.gfile.join(self.model.directory, 'model.tflite'),
-                tflite_model)
-        else:
-            raise NotImplemented
+#     def export(self, format=SAVED_MODEL):
+#         model = self.model.export_model()
+#         if format == SAVED_MODEL:
+#             tf.saved_model.save(
+#                 model, tf.io.gfile.join(self.model.directory, 'saved_model'))
+#         elif format == TFLITE:
+#             converter = tf.lite.TFLiteConverter.from_keras_model(model)
+#             converter.optimizations = {tf.lite.Optimize.DEFAULT}
+#             tflite_model = converter.convert()
+#             tf.io.write_file(
+#                 tf.io.gfile.join(self.model.directory, 'model.tflite'),
+#                 tflite_model)
+#         else:
+#             raise NotImplemented
 
 
 class TextModel:
@@ -93,7 +94,7 @@ class ImageModel:
 
 
 class measure_tool_classification:
-    def __init__(self):
+    def __init__(self,actual_y,pre_y):
         self.actual_y = actual_y
         self.pre_y = pre_y
         self.TP = 0
@@ -122,8 +123,9 @@ class measure_tool_classification:
         #         Negative  |     FN    |    TN    |
         #
         #
-        self.actual_y,self.pre_y = transform_datatype(self.actual_y),transform_datatype(self.pre_y)
-        if check_legality(self.actual_y,self.pre_y)==True:
+        self.actual_y = self.transform_datatype(self.actual_y)
+        self.pre_y = self.transform_datatype(self.pre_y)
+        if self.check_legality()==True:
             total_num = len(self.actual_y)
 
             if total_num ==0:#长度为0，数组为空
@@ -133,14 +135,15 @@ class measure_tool_classification:
                 self.TN,self.TP,self.FN,self.FP=0,0,0,0
 
             for i in range(total_num):
-                if self.actual_y[i]==self.actual_y[i]==0:
+                if self.actual_y[i]==self.pre_y[i]==0:
                     self.TN += 1
-                elif self.actual_y[i]==self.actual_y[i]:
+                elif self.actual_y[i]==self.pre_y[i]:
                     self.TP += 1
                 elif self.actual_y[i]>0:
                     self.FN += 1
                 else:
                     self.FP += 1
+            return self
         else:
             raise 'len(actual_y) != len(predicted_y)'
         
@@ -155,3 +158,13 @@ class measure_tool_classification:
     
     def cal_F1(self):
         return round(2*self.TP/(self.TP+self.FN+self.TP+self.FP),6)
+
+pre_y=     [1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1]
+actual_y = [1,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,0,0,1,0,0]
+Test = measure_tool_classification(actual_y,pre_y)
+Test.count_num()
+print(Test.FN)#10
+print(Test.cal_accuracy())#0.542857
+print(Test.cal_precision())#0.6
+print(Test.cal_recall())#0.473684
+print(Test.cal_F1())#0.529412
