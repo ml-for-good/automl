@@ -49,8 +49,8 @@ tags:
   description: Operations about TrainingJob
 - name: Evaluation
   description: Operations about Evaluation
-- name: PredictionJob
-  description: Operations about Prediction
+- name: BatchPredictionJob
+  description: Operations about BatchPredictionJob
 - name: Endpoint
   description: Operations about Endpoint
 paths:
@@ -1030,41 +1030,41 @@ paths:
                   $ref: "#/components/schemas/EvaluationSlice"
                 type: array
           description: Successful response
-  /namespaces/{namespace}/predictionJob:
+  /namespaces/{namespace}/batchPredictionJobs:
     parameters:
     - $ref: '#/components/parameters/namespace'
     post:
       tags:
-      - PredictionJob
-      description: Creates a predictionJob.
+      - BatchPredictionJob
+      description: Creates a batchPredictionJobs.
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PredictionJob"
+              $ref: "#/components/schemas/BatchPredictionJob"
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PredictionJob"
+                $ref: "#/components/schemas/BatchPredictionJob"
           description: Successful response
-  /namespaces/{namespace}/predictionJob/{job}:
+  /namespaces/{namespace}/batchPredictionJob/{job}:
     parameters:
     - $ref: '#/components/parameters/namespace'
     - $ref: '#/components/parameters/job'
     get:
       tags:
-      - PredictionJob
-      description: Gets a predictionJob
-      operationId: automl.namespaces.predictionJob.get
+      - BatchPredictionJob
+      description: Gets a batchPredictionJob
+      operationId: automl.namespaces.batchPredictionJob.get
       responses:
         200:
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PredictionJob'
+                $ref: '#/components/schemas/BatchPredictionJob'
   /namespaces/{namespace}/endpoints:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1101,6 +1101,27 @@ paths:
                 items: 
                   $ref: "#/components/schemas/Endpoint"
                 type: array
+          description: Successful response
+  /namespaces/{namespace}/endpoints/{endpoint}/predict:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/endpoint'
+    post:
+      tags:
+      - Endpoint
+      description: Perform an online prediction.
+      operationId: automl.namespaces.endpoints.predict
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictResponse"
           description: Successful response
 components:
   schemas:
@@ -1216,7 +1237,7 @@ components:
           $ref: '#/components/schemas/ModelMetadata'
         trainingOnput:
           type: object
-    PredictionJob:
+    BatchPredictionJob:
       type: object
       properties:
         jobId:
@@ -1247,10 +1268,10 @@ components:
           type: integer
           format: int64
           description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
-        predictionInput:
-          $ref: '#/components/schemas/PredictionInput'
-        predictionOutput:
-          $ref: '#/components/schemas/PredictionOutput'
+        batchPredictionJob:
+          $ref: '#/components/schemas/BatchPredictionInput'
+        batchPredictionOutput:
+          $ref: '#/components/schemas/BatchPredictionOutput'
     DataFormat:
       type: string
       description: |
@@ -1266,7 +1287,7 @@ components:
         - TF_RECORD
         - TF_RECORD_GZIP
         - CSV
-    PredictionInput:
+    BatchPredictionInput:
       type: object
       properties:
         dataFormat:
@@ -1295,8 +1316,8 @@ components:
           format: double
           type: number
       type: object
-    PredictionOutput:
-      description: Contains prediction details specific to Tabular.
+    TablesAnnotation:
+      description: Contains annotation details specific to Tables.
       properties:
         baselineScore:
           description: Output only. Stores the prediction score for the baseline example, which is defined as the example with all values set to their baseline values. This is used as part of the Sampled Shapley explanation of the model's prediction. This field is populated only when feature importance is requested. For regression models, this holds the baseline prediction for the baseline example. For classification models, this holds the baseline prediction for the baseline example for the argmax class.
@@ -1309,8 +1330,42 @@ components:
           description: Output only. A confidence estimate between 0.0 and 1.0, inclusive. A higher value means greater confidence in the returned value. For target_column_spec of FLOAT64 data type the score is not populated.
           format: float
           type: number
+        tablesModelColumnInfo:
+          description: Output only. Auxiliary information for each of the model's input_feature_column_specs with respect to this particular prediction. If no other fields than column_spec_name and column_display_name would be populated, then this whole field is not.
+          items:
+            $ref: "#/components/schemas/TablesModelColumnInfo"
+          type: array
         value:
           description: "The predicted value of the row's target_column. The value depends on the column's DataType: * CATEGORY - the predicted (with the above confidence `score`) CATEGORY value. * FLOAT64 - the predicted (with above `prediction_interval`) FLOAT64 value."
+      type: object
+    Row:
+      description: A representation of a row in a relational table.
+      properties:
+        columnSpecIds:
+          description: "The resource IDs of the column specs describing the columns of the row. If set must contain, but possibly in a different order, all input feature column_spec_ids of the Model this row is being passed to. Note: The below `values` field must match order of this field, if this field is set."
+          items:
+            type: string
+          type: array
+        values:
+          description: Required. The values of the row cells, given in the same order as the column_spec_ids, or, if not set, then in the same order as input feature column_specs of the Model this row is being passed to.
+          items: {}
+          type: array
+      type: object
+    TablesModelColumnInfo:
+      description: An information specific to given column and Tables Model, in context of the Model and the predictions created by it.
+      properties:
+        columnDisplayName:
+          description: Output only. The display name of the column (same as the display_name of its ColumnSpec).
+          type: string
+        columnSpecName:
+          description: Output only. The name of the ColumnSpec describing the column. Not populated when this proto is outputted to BigQuery.
+          type: string
+        featureImportance:
+          description: "Output only. When given as part of a Model (always populated): Measurement of how much model predictions correctness on the TEST data depend on values in this column. A value between 0 and 1, higher means higher influence. These values are normalized - for all input feature columns of a given model they add to 1. When given back by Predict (populated iff feature_importance param is set) or Batch Predict (populated iff feature_importance param is set): Measurement of how impactful for the prediction returned for the given row the value in this column was. Specifically, the feature importance specifies the marginal contribution that the feature made to the prediction score compared to the baseline score. These values are computed using the Sampled Shapley method."
+          format: float
+          type: number
+      type: object
+    BatchPredictionOutput:
       type: object
     Credentials:
       type: object
@@ -1685,6 +1740,47 @@ components:
           description: The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
           type: object
       type: object
+    ExamplePayload:
+      description: Example data used for training or prediction.
+      properties:
+        row:
+          $ref: "#/components/schemas/Row"
+          description: Example relational table row.
+      type: object
+    AnnotationPayload:
+      description: Contains annotation information that is relevant to AutoML.
+      properties:
+        annotationSpecId:
+          description: Output only . The resource ID of the annotation spec that this annotation pertains to. The annotation spec comes from either an ancestor dataset, or the dataset that was used to train the model in use.
+          type: string
+        displayName:
+          description: Output only. The value of display_name when the model was trained. Because this field returns a value at model training time, for different models trained using the same dataset, the returned value could be different as model owner could update the `display_name` between any two model training.
+          type: string
+        tables:
+          $ref: "#/components/schemas/TablesAnnotation"
+          description: Annotation details for Tables.
+      type: object
+    PredictRequest:
+      description: Request message for PredictionService.Predict.
+      properties:
+        parameters:
+          additionalProperties:
+            type: string
+          description: "Additional domain-specific parameters, any string must be up to 25000 characters long. * For Image Classification: `score_threshold` - (float) A value from 0.0 to 1.0. When the model makes predictions for an image, it will only produce results that have at least this confidence score. The default is 0.5. * For Image Object Detection: `score_threshold` - (float) When Model detects objects on the image, it will only produce bounding boxes which have at least this confidence score. Value in 0 to 1 range, default is 0.5. `max_bounding_box_count` - (int64) No more than this number of bounding boxes will be returned in the response. Default is 100, the requested value may be limited by server. * For Tables: feature_importance - (boolean) Whether feature importance should be populated in the returned TablesAnnotation. The default is false."
+          type: object
+        payload:
+          $ref: "#/components/schemas/ExamplePayload"
+          description: Required. Payload to perform a prediction on. The payload must match the problem type that the model was trained to solve.
+      type: object
+    PredictResponse:
+      description: Response message for PredictionService.Predict.
+      properties:
+        payload:
+          description: Prediction result. Translation and Text Sentiment will return precisely one payload.
+          items:
+            $ref: "#/components/schemas/AnnotationPayload"
+          type: array
+      type: object
   parameters:
     access_token:
       description: OAuth access token.
@@ -1784,6 +1880,14 @@ components:
       name: slice
       in: path
       description: The id of the slice.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    endpoint:
+      name: endpoint
+      in: path
+      description: The id of the endpoint.
       required: true
       schema:
         type: string
