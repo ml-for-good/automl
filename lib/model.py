@@ -90,3 +90,68 @@ class TextModel:
 
 class ImageModel:
     pass
+
+
+class measure_tool_classification:
+    def __init__(self):
+        self.actual_y = actual_y
+        self.pre_y = pre_y
+        self.TP = 0
+        self.FN = 0
+        self.FP = 0
+        self.TN = 0
+    
+    def Multiple2TF(self):#多分类转换成二分类(待完成)
+        return None
+
+    def check_legality(self):#判断数组长度是否一致
+        return True if (len(self.actual_y)==len(self.pre_y)) else False
+
+    def transform_datatype(self,array):# list -> np.ndarray
+        if type(array) != np.ndarray:
+            return np.asarray(array)
+        return array
+    
+    def count_num(self): #先计数
+        # 时间复杂度O(n),空间复杂度O(1)
+        #
+        #                            predict
+        #                      Positive   Negative  
+        #                    ----------------------
+        # actual  Positive  |     TP    |    FP    |
+        #         Negative  |     FN    |    TN    |
+        #
+        #
+        self.actual_y,self.pre_y = transform_datatype(self.actual_y),transform_datatype(self.pre_y)
+        if check_legality(self.actual_y,self.pre_y)==True:
+            total_num = len(self.actual_y)
+
+            if total_num ==0:#长度为0，数组为空
+                raise 'empty array for both of the actural_y and predicted_y'
+
+            if self.TN!=0 or self.TP!=0 or self.FN!=0 or self.FP!=0:# 重置 矩阵计数
+                self.TN,self.TP,self.FN,self.FP=0,0,0,0
+
+            for i in range(total_num):
+                if self.actual_y[i]==self.actual_y[i]==0:
+                    self.TN += 1
+                elif self.actual_y[i]==self.actual_y[i]:
+                    self.TP += 1
+                elif self.actual_y[i]>0:
+                    self.FN += 1
+                else:
+                    self.FP += 1
+        else:
+            raise 'len(actual_y) != len(predicted_y)'
+        
+    def cal_accuracy(self):
+        return round((self.TP+self.TN)/(self.TP+self.TN+self.FP+self.FN),6)
+
+    def cal_precision(self):
+        return round(self.TP/(self.TP+self.FP),6)
+    
+    def cal_recall(self):
+        return round(self.TP/(self.TP+self.FN),6)
+    
+    def cal_F1(self):
+        return round(2*self.TP/(self.TP+self.FN+self.TP+self.FP),6)
