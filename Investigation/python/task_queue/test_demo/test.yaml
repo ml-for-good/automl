@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: test-demo
+  template:
+    metadata:
+      labels:
+        app: test-demo
+    spec:
+      containers:
+        image: localhost/test-demo
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8030
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-demo-np-service
+spec:
+  selector:
+    app: test-demo
+  type: NodePort
+  ports:
+  - port: 8030
+    targetPort: 8030
+    nodePort: 30080
