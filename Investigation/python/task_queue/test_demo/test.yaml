@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
       - name: test-demo
-        image: localhost/test-demo
-        imagePullPolicy: Never
+        image: acturea/test-demo
         ports:
         - containerPort: 8030
 
