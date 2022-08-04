@@ -13,12 +13,9 @@ spec:
         app: test-demo
     spec:
       containers:
+      - name: test-demo
         image: localhost/test-demo
         imagePullPolicy: Never
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
         ports:
         - containerPort: 8030
 
@@ -34,4 +31,4 @@ spec:
   ports:
   - port: 8030
     targetPort: 8030
-    nodePort: 30080
+    nodePort: 30088
