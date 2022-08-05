@@ -1287,16 +1287,53 @@ components:
         - TF_RECORD
         - TF_RECORD_GZIP
         - CSV
+    DedicatedResources:
+      type: object
+      description: The config of resources used by the Model during the batch prediction. If the Model supports DEDICATED_RESOURCES this config may be provided (and the job will use these resources), if the Model doesn't support AUTOMATIC_RESOURCES, this config must be provided.
+      properties:
+        startingReplicaCount:
+          type: integer
+          description: Immutable. The number of machine replicas used at the start of the batch operation. If not set, platform decides starting number, not greater than maxReplicaCount
+        maxReplicaCount:
+          type: integer
+          description: Immutable. The maximum number of machine replicas the batch operation may be scaled to. The default value is 10.
+        machineSpec:
+          type: object
+          description: Required. Immutable. The specification of a single machine.
+          properties:
+            machineType:
+              description: Immutable. The type of the machine.
+              type: string
+              enum:
+                - standard-2
+                - standard-4
+                - highmem-2
+                - highmem-4
+                - highcpu-2
+                - highcpu-4
+            acceleratorCount:
+              description: The number of accelerators to attach to the machine.
+              type: integer
+            acceleratorType:
+              description: Immutable. The type of accelerator(s) that may be attached to the machine as per acceleratorCount.
+              type: string
+              enum:
+                - UNSPECIFIED
+                - NVIDIA_TESLA_K80
+                - NVIDIA_TESLA_A100
+                - TPU_V2
     BatchPredictionInput:
       type: object
       properties:
-        dataFormat:
+        instancesFormat:
           # Required. The format of the input data files.
           $ref: "#/components/schemas/DataFormat"
-        ouputDataFormat:
-          # Optional. Format of the output data files, defaults to JSON.
-          $ref: "#/components/schemas/DataFormat"
         inputPaths:
+          $ref: "#/components/schemas/URI"
+        predictionsFormat:
+          # Format of the output data files, defaults to JSON.
+          $ref: "#/components/schemas/DataFormat"
+        outputPaths:
           $ref: "#/components/schemas/URI"
         modelName:
           type: string
@@ -1304,6 +1341,8 @@ components:
         versionName:
           type: string
           description: specify a version of the model to use. 
+        dedicatedResources:
+          $ref: "#/components/schemas/DedicatedResources"
     DoubleRange:
       description: A range between two double numbers.
       properties:
@@ -1699,6 +1738,15 @@ components:
       type: object
     Endpoint:
       type: object
+      properties:
+        modelName:
+          type: string
+          description: The name of the Model resoure that produces the predictions via this job,
+        versionName:
+          type: string
+          description: specify a version of the model to use. 
+        dedicatedResources:
+          $ref: "#/components/schemas/DedicatedResources"
     Status:
       description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
       properties:
