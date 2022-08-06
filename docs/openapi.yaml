@@ -1725,6 +1725,20 @@ components:
       type: object
     RegressionEvaluationMetrics:
       type: object
+    ModelExplanation:
+      type: object
+      description: Aggregated explanation metrics for the Model's prediction output over the data this ModelEvaluation uses. This field is populated only if the Model is evaluated with explanations, and only for AutoML tabular Models.
+      properties:
+        meanAttributions:
+          type: array
+          description: Aggregated attributions explaining the Model's prediction outputs over the set of instances. The attributions are grouped by outputs.For Models that predict only one output, such as regression Models that predict only one score, there is only one attibution that explains the predicted output. For Models that predict multiple outputs, such as multiclass Models that predict multiple classes, each element explains one specific item.
+          items:
+            type: object
+            properties:
+              featureAttributions:
+                type: object
+                description: Attributions of each explained feature. Automl platform shows you how much each feature impacts a model. The values are provided as a percentage for each feature, the higher the percentage, the more strongly that feature impacted model training. Review this information to ensure that all of the most important features make sense for your data and business problem.
+            
     Evaluation:
       type: object
       description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
@@ -1732,10 +1746,41 @@ components:
         name:
           description: "Output only. Resource name of the model evaluation"
           type: string
+        performance:
+          type: string
+          description: model performance rating
+          enum:
+            - Excellent
+            - Great
+            - Good, 
+            - Okay
+            - Poor
+        sliceDimensions:
+          type: array
+          description: Output only. All possible dimensions of ModelEvaluationSlices. 
+          items:
+            type: string
+            example: AnnotationSpec
         metrics:
           $ref: '#/components/schemas/EvaluationMetrics'
+        modelExplanation:
+          $ref: '#/components/schemas/ModelExplanation'
     EvaluationSlice:
-      type: object
+      allOf:
+        - $ref: '#/components/schemas/Evaluation'
+        - type: object
+          properties:
+            slice:
+              type: object
+              description: Output only. The slice of the test data that is used to evaluate the Model.
+              properties:
+                dimension:
+                  description: Output only. The dimension of the slice. Well-known dimensions are, annotationSpec, This slice is on the test data that has either ground truth or prediction with AnnotationSpec.display_name equals to value.
+                  type: string
+                  example: annotationSpec
+                value:
+                  description: Output only. The value of the dimension in this slice.
+                  type: string
     Endpoint:
       type: object
       properties:
