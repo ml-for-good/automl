@@ -29,7 +29,7 @@ class ConsumerGetter:
 			if msg.error():
 				print(f'Consumer error: {msg.error()}')
 				continue
-				
+			
 			if msg.value().decode("utf-8") == 'END':
 				self.consumer.close()
 				break
@@ -38,7 +38,11 @@ class ConsumerGetter:
 		print('Ended')
 
 
-if __name__ == '__main__':
+def test():
 	getter = ConsumerGetter()
 	getter.subscribe_topics(['test'])
 	getter.start()
+
+
+if __name__ == '__main__':
+	test()
