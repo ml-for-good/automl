@@ -1,26 +1,24 @@
 openapi: 3.0.1
 info:
   title: AutoML
-  description: 'We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.'
-  termsOfService: http://example.com/terms/
+  description: | 
+    We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.
+    
+    Please copy the entire content of this doc to the swagger editor (https://editor.swagger.io) to design the API
+  termsOfService: https://automl.com/terms/
   contact:
     name: API Support
-    url: http://www.example.com/support
-    email: support@example.com
+    url: https://automl.com/support/
+    email: support@automl.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.0.1
-externalDocs:
-  description: Please copy the entire content of this doc to the swagger editor to design the API
-  url: http://editor.swagger.io
+  version: v1beta1
 servers:
-- url: https://development.example.com/v1
-  description: Development server
-- url: https://staging.example.com/v1
-  description: Staging server
-- url: https://api.example.com/v1
-  description: Production server
+- url: https://automl.com/v1beta1
+  description: Supports latest preview features.
+- url: https://automl.com/v1
+  description: Stable
 security:
   - oauth2:
       - self
