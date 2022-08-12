@@ -650,7 +650,8 @@ paths:
     post:
       tags:
       - Dataset
-      description: Creates a dataset.
+      summary: Creates a dataset
+      description: Tabular training data in MinIO Storage is not imported into platform. (When you import from local files, they are imported into MinIO Storage.) When you create a dataset with tabular data, the data is associated with the dataset. Changes you make to your data source in MinIO Storage after dataset creation are incorporated into models subsequently trained with that dataset. A snapshot of the dataset is taken when model training begins.
       operationId: automl.namespaces.datasets.create
       requestBody:
         content:
@@ -1278,7 +1279,7 @@ components:
          * `JSON` - Each line of the file is a JSON dictionary representing one record.
          * `TF_RECORD` - The source file is a TFRecord file. Currently available only for input data.
          * `TF_RECORD_GZIP` - The source file is a GZIP-compressed TFRecord file. Currently available only for input data.
-         * `CSV` - 	Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
+         * `CSV` -   Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
       enum:
         - UNSPECIFIED
         - JSON
