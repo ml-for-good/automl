@@ -8,7 +8,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
 
 ## How to setup the keycloak server using Api-call (Client credential grant type)
 1. create a realme setting called: automl_dev
-    - <img src="./imgs/1.png" width="60%"/>
+    - <img src="./img/1.png" width="60%"/>
 2. import the `realm-export.json`
 3. try: `GET http://localhost:8080/realms/automl_dev/.well-known/openid-configuration`
     - ```json
@@ -20,9 +20,9 @@ https://www.keycloak.org/getting-started/getting-started-docker
       ```
 4. try: `POST http://localhost:8080/realms/automl_dev/protocol/openid-connect/token`
     - with:  
-        <img src="./imgs/2.png" width="60%"/>  
+        <img src="./img/2.png" width="60%"/>  
         where you can get client_id with the same name client, client_secret by  
-        <img src="./imgs/3.png" width="60%"/> 
+        <img src="./img/3.png" width="60%"/> 
     - response:
         ```json
         {
@@ -40,7 +40,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
 
 ## How to setup the keycloak server using ui signin (Auth code grant type)
 1. create a realme setting called: automl_dev
-    - <img src="./imgs/1.png" width="60%"/>
+    - <img src="./img/1.png" width="60%"/>
 2. import the `realm-export.json`
 3. try: `GET http://localhost:8080/realms/automl_dev/.well-known/openid-configuration`
     - ```json
@@ -52,7 +52,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
       ```
 4. try: `GET http://localhost:8080/realms/automl_dev/protocol/openid-connect/auth?...`
     - with  
-        - <img src="./imgs/5.png" width="80%"/>
+        - <img src="./img/5.png" width="80%"/>
     - Create a new user through KeyCloak admin console (`Users` on the left hand side)
         - After creation: visite `http://localhost:8080/realms/<realm-name>/account/` and try to signin with your user info
 5. Copy the url in Postman
@@ -61,7 +61,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
 
 ## How to integrate Keycloak to frontend application (Auth code grant type with PKCE)
 1. create a realme setting called: automl_dev
-    - <img src="./imgs/1.png" width="60%"/>
+    - <img src="./img/1.png" width="60%"/>
 2. import the `realm-export.json`
 3. try: `GET http://localhost:8080/realms/automl_dev/.well-known/openid-configuration`
     - ```json
@@ -73,12 +73,12 @@ https://www.keycloak.org/getting-started/getting-started-docker
       ```
 4. try: `GET http://localhost:8080/realms/automl_dev/protocol/openid-connect/auth?...`
     - with  
-        - <img src="./imgs/5.png" width="80%"/>
+        - <img src="./img/5.png" width="80%"/>
     - Create a new user through KeyCloak admin console (`Users` on the left hand side)
         - After creation: visite `http://localhost:8080/realms/<realm-name>/account/` and try to signin with your user info
 5. Give the user with USER role
-    - <img src="./imgs/6.png" width="80%"/>
-    - <img src="./imgs/7.png" width="80%"/>
+    - <img src="./img/6.png" width="80%"/>
+    - <img src="./img/7.png" width="80%"/>
 6. ```bash
    cd my-auth-frontend
    npm install
@@ -87,15 +87,15 @@ https://www.keycloak.org/getting-started/getting-started-docker
    Then you can sign in using your previously created user account through this ui to access some backend API as shown by the frontend application.
 7. example screenshots:
     - initially:  
-        - <img src="./imgs/8.png" width="80%"/>
+        - <img src="./img/8.png" width="80%"/>
     - visite /hello  
-        - <img src="./imgs/9.png" width="80%"/>
+        - <img src="./img/9.png" width="80%"/>
     - signin:   
-        - <img src="./imgs/10.png" width="80%"/>
+        - <img src="./img/10.png" width="80%"/>
     - successful sigin and redirected to /dashboard  
-        - <img src="./imgs/11.png" width="80%"/>
+        - <img src="./img/11.png" width="80%"/>
     - visite /sample   
-        - <img src="./imgs/12.png" width="80%"/>
+        - <img src="./img/12.png" width="80%"/>
 
 ## trouble shooting
 1. ["RESTEASY003210: Could not find resource for full path ..."](https://stackoverflow.com/a/71634718/18552929)
