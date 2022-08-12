@@ -52,7 +52,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
       ```
 4. try: `GET http://localhost:8080/realms/automl_dev/protocol/openid-connect/auth?...`
     - with  
-    <img src="./imgs/5.png" width="80%"/>
+        - <img src="./imgs/5.png" width="80%"/>
     - Create a new user through KeyCloak admin console (`Users` on the left hand side)
         - After creation: visite `http://localhost:8080/realms/<realm-name>/account/` and try to signin with your user info
 5. Copy the url in Postman
@@ -73,7 +73,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
       ```
 4. try: `GET http://localhost:8080/realms/automl_dev/protocol/openid-connect/auth?...`
     - with  
-    <img src="./imgs/5.png" width="80%"/>
+        - <img src="./imgs/5.png" width="80%"/>
     - Create a new user through KeyCloak admin console (`Users` on the left hand side)
         - After creation: visite `http://localhost:8080/realms/<realm-name>/account/` and try to signin with your user info
 5. Give the user with USER role
@@ -87,15 +87,15 @@ https://www.keycloak.org/getting-started/getting-started-docker
    Then you can sign in using your previously created user account through this ui to access some backend API as shown by the frontend application.
 7. example screenshots:
     - initially:  
-    <img src="./imgs/8.png" width="80%"/>
+        - <img src="./imgs/8.png" width="80%"/>
     - visite /hello  
-    <img src="./imgs/9.png" width="80%"/>
+        - <img src="./imgs/9.png" width="80%"/>
     - signin:   
-    <img src="./imgs/10.png" width="80%"/>
+        - <img src="./imgs/10.png" width="80%"/>
     - successful sigin and redirected to /dashboard  
-    <img src="./imgs/11.png" width="80%"/>
+        - <img src="./imgs/11.png" width="80%"/>
     - visite /sample   
-    <img src="./imgs/12.png" width="80%"/>
+        - <img src="./imgs/12.png" width="80%"/>
 
 ## trouble shooting
 1. ["RESTEASY003210: Could not find resource for full path ..."](https://stackoverflow.com/a/71634718/18552929)
