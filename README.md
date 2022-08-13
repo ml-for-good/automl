@@ -13,31 +13,25 @@ Todo
 ## How to deploy
 
 ### Step 1:
+
 环境需求:
-- minikube
-  - version: v1.26.1
-- docker
-  - version: Docker Desktop 4.10.1 (82475)
-- Java
-  - version: Todo
+
+- Minikube: v1.26.1
+- Docker: Docker Desktop 4.10.1 (82475)
+- Java: Todo
 
 ### Step 2:
 
 通过MiniKube部署依赖服务:
 
-- Mysql
-  - version: Todo
-- Kafka
-  - Version: Todo
-- Redis
-  - Version:Todo
-- Minio
-  - Version:
+- Mysql: Todo
+- Kafka: Todo
+- Redis: Todo
+- Minio: Todo
 - …
 
 ### Step 3
 
-服务部署顺序：
-Todo
+服务部署顺序: Todo
 
 # License
