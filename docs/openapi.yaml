@@ -34,23 +34,25 @@ tags:
   externalDocs:
     url: https://jupyterhub.readthedocs.io/en/stable/rbac/roles.html#define-role-target
 - name: User
-  description: Operations about user
+  description: Management of user
   externalDocs:
     url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
 - name: Group
-  description: Operations about group
+  description: Management of group
 - name: Dataset
   description: Management of Dataset
 - name: Model
-  description: Operations about model
+  description: Management of model
 - name: TrainingJob
-  description: Operations about TrainingJob
+  description: Management of TrainingJob
 - name: Evaluation
-  description: Operations about Evaluation
+  description: Management of Evaluation
 - name: BatchPredictionJob
-  description: Operations about BatchPredictionJob
+  description: Management of BatchPredictionJob
 - name: Endpoint
-  description: Operations about Endpoint
+  description: Management of Endpoint
+- name: Operation
+  description: Management of Operation
 paths:
   /oauth2/authorize:
     get:
@@ -1101,6 +1103,22 @@ paths:
                   $ref: "#/components/schemas/Endpoint"
                 type: array
           description: Successful response
+  /namespaces/{namespace}/endpoints/{endpoint}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/endpoint'
+    delete:
+      tags:
+      - Endpoint
+      description: Deletes an Endpoint.
+      operationId: automl.namespaces.endpoints.delete
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
   /namespaces/{namespace}/endpoints/{endpoint}/predict:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1122,6 +1140,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/PredictResponse"
           description: Successful response
+  /namespaces/{namespace}/operations/{operation}:
+    get:
+      description: Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+      operationId: automl.namespaces.operations.get
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - $ref: '#/components/parameters/operation'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+      tags:
+        - operations
 components:
   schemas:
     Namespace:
@@ -1533,11 +1567,12 @@ components:
           description: The namespace of the dataset.
         name:
           type: string
-          description: The name of the dataset.
-        dataset_id:
-          description: "The resource id of the dataset"
+          description: Output only. The resource name of the Dataset.
+        displayName:
+          description: Required. The user-defined name of the Dataset. The name can be up to 128 characters long and can be consist of any UTF-8 characters.
           type: string
         uri:
+          # description: Paths (URIs) to the MinIO buckets containing the training data. There can be more than one. Each URI has the form, s3://datasets/train.csv
           $ref: "#/components/schemas/URI"
       type: object
     TableSpec:
@@ -1810,13 +1845,13 @@ components:
           type: string
       type: object
     Operation:
-      description: This resource represents a long-running operation that is the result of a network API call.
+      description: This resource represents a long-running operation that is the result of a network API call. Some requests start long-running operations that require time to complete. These requests return an operation name, which you can use to view the operation's status or cancel the operation. Most of the API call return as quickly as possible, and provide a complete response. However, there are two kinds of asynchronous operations that you should understand - jobs and long-running operations. When you start an asynchronous operation, you usually want to know when it completes. The process for getting status is different for jobs and long-running operations
       properties:
         done:
           description: If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.
           type: boolean
         error:
-          description: The error result of the operation in case of failure or cancellation.
+          # description: The error result of the operation in case of failure or cancellation.
           $ref: '#/components/schemas/Status'
         metadata:
           additionalProperties:
@@ -1918,7 +1953,7 @@ components:
     dataset:
       name: dataset
       in: path
-      description: The id of the dataset.
+      description: The resource name of the dataset.
       required: true
       schema:
         type: string
@@ -1927,7 +1962,7 @@ components:
     tableSpec:
       name: tableSpec
       in: path
-      description: The id of the tableSpec.
+      description: The resource name of the tableSpec.
       required: true
       schema:
         type: string
@@ -1936,7 +1971,7 @@ components:
     annotationSpec:
       name: annotationSpec
       in: path
-      description: The id of the annotationSpec.
+      description: The resource name of the annotationSpec.
       required: true
       schema:
         type: string
@@ -1945,7 +1980,7 @@ components:
     model:
       name: model
       in: path
-      description: The id of the model.
+      description: The resource name of the model.
       required: true
       schema:
         type: string
@@ -1954,7 +1989,7 @@ components:
     version:
       name: version
       in: path
-      description: The id of the version.
+      description: The resource name of the version.
       required: true
       schema:
         type: string
@@ -1963,7 +1998,7 @@ components:
     evaluation:
       name: evaluation
       in: path
-      description: The id of the evaluation.
+      description: The resource name of the evaluation.
       required: true
       schema:
         type: string
@@ -1971,7 +2006,7 @@ components:
     slice:
       name: slice
       in: path
-      description: The id of the slice.
+      description: The resource name of the slice.
       required: true
       schema:
         type: string
@@ -1979,7 +2014,15 @@ components:
     endpoint:
       name: endpoint
       in: path
-      description: The id of the endpoint.
+      description: The resource name of the endpoint.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    operation:
+      name: operation
+      in: path
+      description: The resource name of the operation.
       required: true
       schema:
         type: string
