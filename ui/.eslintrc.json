@@ -28,8 +28,30 @@
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
     "semi": ["error", "never"],
     "arrow-parens": ["error", "as-needed"],
-    "import/extensions": ["error", "never"],
     "quotes": ["error", "single"],
-    "jsx-quotes": ["error", "prefer-double"]
+    "jsx-quotes": ["error", "prefer-double"],
+    "indent": ["error", 2],
+    "linebreak-style": ["error", "unix"],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "react/prop-types": "off",
+    "import/no-unresolved": [
+      "error",
+      {
+        "ignore": [
+          "@/"
+        ]
+      }
+    ],
+    "import/extensions": [
+      "error",
+      "never",
+      {
+        "png": "always",
+        "svg": "always"
+      }
+    ]
   }
 }

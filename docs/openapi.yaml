@@ -1,51 +1,103 @@
 openapi: 3.0.1
 info:
   title: AutoML
-  description: 'We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.'
-  termsOfService: http://example.com/terms/
+  description: | 
+    We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.
+    
+    Please copy the entire content of this doc to the swagger editor (https://editor.swagger.io) to design the API
+  termsOfService: https://automl.com/terms/
   contact:
     name: API Support
-    url: http://www.example.com/support
-    email: support@example.com
+    url: https://automl.com/support/
+    email: support@automl.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.0.1
-externalDocs:
-  description: Please copy the whole content of this yaml file into the site below to preview it
-  url: https://editor.swagger.io/
+  version: v1beta1
 servers:
-- url: https://development.example.com/v1
-  description: Development server
-- url: https://staging.example.com/v1
-  description: Staging server
-- url: https://api.example.com/v1
-  description: Production server
+- url: https://automl.com/v1beta1
+  description: Supports latest preview features.
+- url: https://automl.com/v1
+  description: Stable
+security:
+  - oauth2:
+      - self
 tags:
-- name: Authentication
-  description: API Schema of AutoML
+- name: Authorization
+  description: Authentication and Authorization
   externalDocs:
-    description: Find out more about AutoML
-    url: http://swagger.io
+    url: https://stackoverflow.blog/2022/04/14/the-authorization-code-grant-in-excruciating-detail/
 - name: Namespaces
   description: provides namespace level isolation
-- name: Dataset Management
-  description: Management of Dataset
-- name: Train
-  description: Operations about Training
-- name: Evaluate
-  description: Operations about Evaluation
+- name: Role
+  description: Roles can be defined or modified in the configuration file as a list of dictionaries.
   externalDocs:
-    description: Find out more about AutoML
-    url: http://swagger.io
-- name: Predict
-  description: Operations about Prediction
+    url: https://jupyterhub.readthedocs.io/en/stable/rbac/roles.html#define-role-target
+- name: User
+  description: Management of user
+  externalDocs:
+    url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+- name: Group
+  description: Management of group
+- name: Dataset
+  description: Management of Dataset
+- name: Model
+  description: Management of model
+- name: TrainingJob
+  description: Management of TrainingJob
+- name: Evaluation
+  description: Management of Evaluation
+- name: BatchPredictionJob
+  description: Management of BatchPredictionJob
+- name: Endpoint
+  description: Management of Endpoint
+- name: Operation
+  description: Management of Operation
 paths:
-  /automl/login:
+  /oauth2/authorize:
+    get:
+      tags:
+      - Authorization
+      summary: OAuth 2.0 authorize endpoint
+      description: |
+        Redirect users to this URL to begin the OAuth process.
+        It is not an API endpoint.
+      parameters:
+        - name: client_id
+          in: query
+          description: The client id
+          required: true
+          schema:
+            type: string
+        - name: response_type
+          in: query
+          description: The response type (always 'code')
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: A state string
+          schema:
+            type: string
+        - name: redirect_uri
+          in: query
+          description: The redirect url
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content: {}
+        400:
+          description: OAuth2Error
+          content: {}
     post:
       tags:
-      - Authentication
-      summary: Login to AutoML
+      - Authorization
+      summary: The OAuth server authenticates the user
+      description: The OAuth server will render a login form to gather login information, such as a username and password, then the user can enter credentials and the OAuth server authenticates the user.
       operationId: login
       requestBody:
         description: Login Credentials
@@ -61,6 +113,17 @@ paths:
             application/json:
               schema:
                 type: string
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
         400:
           description: Invalid username/password supplied
           content: {}
@@ -71,6 +134,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
       x-codegen-request-body-name: body
+  /oauth2/token:
+    post:
+      tags:
+      - Authorization
+      summary: Request an OAuth2 token
+      description: |
+        Request an OAuth2 token from an authorization code.
+        This request completes the OAuth process.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+                - client_id
+                - client_secret
+                - code
+                - grant_type
+                - redirect_uri
+              properties:
+                client_id:
+                  type: string
+                  description: The client id
+                client_secret:
+                  type: string
+                  description: The client secret
+                grant_type:
+                  type: string
+                  description: The grant type (always 'authorization_code')
+                code:
+                  type: string
+                  description: The code provided by the authorization redirect
+                redirect_uri:
+                  type: string
+                  description: The redirect url
+        required: true
+      responses:
+        200:
+          description: JSON response including the token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: The new API token for the user
+                  token_type:
+                    type: string
+                    description: Will always be 'Bearer'
   /namespaces/{namespace}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -84,7 +196,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatedNamespace'
+              $ref: '#/components/schemas/Namespace'
       responses:
         '200':
           description: OK
@@ -121,241 +233,931 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NamespaceList'
-  /dataset:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Namespace'
+  /roles:
     get:
       tags:
-      - Dataset Management
-      summary: Query dataset info
-      description: Query Dataset Info
-      operationId: query_dataset_info
+      - Role
+      summary: List roles
       parameters:
-      - name: dataset_id
-        in: query
-        description: Dataset Id to query by
-        required: true
-        schema:
-          type: string
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
       responses:
         200:
-          description: successful operation
+          description: The list of roles
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DataSetInfoResponse'
-        400:
-          description: Invalid dataset id value
-          content: {}
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+      security: []
+  /user:
+    get:
+      tags:
+      - User
+      summary: Return authenticated user's model
+      responses:
+        200:
+          description: |
+            The authenticated user's model is returned
+            with additional information about the permissions associated with the request token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestIdentity"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
+  /users:
+    get:
+      tags:
+      - User
+      summary: List users
+      responses:
+        200:
+          description: The Hub's user list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
     post:
       tags:
-      - Dataset Management
-      summary: Upload a Dataset
-      operationId: upload_a_dataset
+      - User
+      summary: Create multiple users
       requestBody:
         content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usernames:
+                  type: array
+                  description: list of usernames to create on the Hub
+                  items:
+                    type: string
+                admin:
+                  type: boolean
+                  description: whether the created users should be admins
+        required: true
+      responses:
+        201:
+          description: The users have been created
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The created users
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+      x-codegen-request-body-name: body
+  /users/{name}:
+    get:
+      tags:
+      - User
+      summary: Get a user by name
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The User model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - read:users
+            - read:users:name
+            - read:users:groups
+            - read:roles:users
+            - admin:auth_state
+    post:
+      tags:
+      - User
+      summary: Create a single user
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: The user has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+    delete:
+      tags:
+      - User
+      summary: Delete a user
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The user has been deleted
+          content: {}
+      security:
+        - oauth2:
+            - admin:users
+    patch:
+      tags:
+      - User
+      summary: Modify a user
+      description: Change a user's name or admin status
+      parameters:
+        - name: name
+          in: path
+          description: username
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description:
+          Updated user info. At least one key to be updated (name or admin)
+          is required.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description:
+                    the new name (optional, if another key is updated i.e.
+                    admin)
+                admin:
+                  type: boolean
+                  description:
+                    update admin (optional, if another key is updated i.e.
+                    name)
+        required: true
+      responses:
+        200:
+          description: The updated user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+      security:
+        - oauth2:
+            - admin:users
+      x-codegen-request-body-name: body
+  /groups:
+    get:
+      tags:
+      - Group
+      summary: List groups
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        200:
+          description: The list of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
+  /groups/{name}:
+    get:
+      tags:
+      - Group
+      summary: Get a group by name
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The group model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
+    post:
+      tags:
+      - Group
+      summary: Create a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: The group has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - admin:groups
+    delete:
+      tags:
+      - Group
+      summary: Delete a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: The group has been deleted
+          content: {}
+      security:
+        - oauth2:
+            - admin:groups
+  /groups/{name}/users:
+    post:
+      tags:
+      - Group
+      summary: Add users to a group
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The users to add to the group
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                users:
+                  type: array
+                  description: List of usernames to add to the group
+                  items:
+                    type: string
+        required: true
+      responses:
+        200:
+          description: The users have been added to the group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - groups
+      x-codegen-request-body-name: body
+    delete:
+      tags:
+      - Group
+      summary: |
+        Remove users from a group
+      description: |
+        Body should be a JSON dictionary
+        where `users` is a list of usernames to remove from the groups.
+
+        ```json
+        {
+          "users": ["name1", "name2"]
+        }
+        ```
+
+      parameters:
+        - name: name
+          in: path
+          description: group name
+          required: true
+          schema:
+            type: string
+      # requestBody:
+      #   description: The users to remove from the group
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         properties:
+      #           users:
+      #             type: array
+      #             description: List of usernames to remove from the group
+      #             items:
+      #               type: string
+      #   required: true
+      responses:
+        200:
+          description: The users have been removed from the group
+          content: {}
+      security:
+        - oauth2:
+            - groups
+      x-codegen-request-body-name: body
+  /namespaces/{namespace}/files/{filename}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - Dataset
+      summary: upload files
+      operationId: automl.namespaces.files.create
+      parameters:
+      - name: filename
+        in: path
+        description: filename
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              description: the attachment content
+              format: binary
           multipart/form-data:
             schema:
+              required:
+              - file
               properties:
                 file:
                   type: string
+                  description: the attachment content
                   format: binary
+        required: true
       responses:
         200:
-          description: successful operation
+          description: Upload was successful
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: '#/components/schemas/UploadDatasetResponse'
+                type: object
+                properties:
+                  uri:
+                    $ref: "#/components/schemas/URI"
         400:
-          description: Invalid dataset supplied
+          description: Invalid input
           content: {}
+  /namespaces/{namespace}/datasets:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - Dataset
+      summary: Creates a dataset
+      description: Tabular training data in MinIO Storage is not imported into platform. (When you import from local files, they are imported into MinIO Storage.) When you create a dataset with tabular data, the data is associated with the dataset. Changes you make to your data source in MinIO Storage after dataset creation are incorporated into models subsequently trained with that dataset. A snapshot of the dataset is taken when model training begins.
+      operationId: automl.namespaces.datasets.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Dataset"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+          description: Successful response
+    get:
+      tags:
+      - Dataset
+      description: Lists datasets in the namespace.
+      operationId: automl.namespaces.datasets.list
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Dataset"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+    get:
+      operationId: getDataset
+      summary: Retrieve a dataset
+      description: Returns a dataset.
+      tags:
+        - Dataset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
     delete:
       tags:
-      - Dataset Management
+      - Dataset
       summary: Delete Dataset by Dataset Id
       operationId: delete_dataset_by_id
-      parameters:
-      - name: dataset_id
-        in: query
-        description: Dataset Set Id that will be deleted
-        required: true
-        schema:
-          type: string
       responses:
         200:
           description: successful operation
           content: {}
         400:
           description: Invalid dataset id value
-          content: {} 
-  /train/job:
-    get:
-      tags:
-      - Train
-      summary: Get the status of a training job
-      description: Get the status of a training job
-      operationId: get_training_job_status
-      parameters:
-      - name: train_job_id
-        in: query
-        description: Get a training job info
-        required: true
-        schema:
-          type: integer
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainJobStatus'
-        400:
-          description: Invalid Params
           content: {}
-    post:
+    patch:
       tags:
-      - Train
-      summary: Train a dataset by selecting columns
-      description: Train a dataset by selecting columns
-      operationId: create_training_job
+      - Dataset
+      summary: Modify a dataset
+      operationId: patch_dataset_by_id
       requestBody:
-        description: Start a training by selecting columns of a datset.
+        description:
+          Updated user info. At least one key to be updated (name or admin)
+          is required.
         content:
-          '*/*':
+          application/json:
             schema:
-              $ref: '#/components/schemas/TrainJobInfoRequest'
+              $ref: "#/components/schemas/Dataset"
         required: true
       responses:
         200:
-          description: successful operation
+          description: The updated dataset info
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrainJobInfoResponse'
+                $ref: "#/components/schemas/Dataset"
         400:
-          description: Invalid Params
+          description: Invalid dataset id value
           content: {}
-      x-codegen-request-body-name: train_job_info
-  /evaluation:
+  /namespaces/{namespace}/datasets/{dataset}/tableSpecs:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
     get:
       tags:
-      - Evaluate
-      summary: Get the Evaluation Result
-      description: Get the Evaluation Result
-      operationId: get_evaluation_res
-      parameters:
-      - name: evaluation_job_id
-        in: query
-        description: Evaluation Job ID
-        required: true
-        schema:
-          type: integer
+      - Dataset
+      description: Lists table specs in a dataset.
+      operationId: automl.namespaces.datasets.tableSpecs.list
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EvaluationJobResult'
-        400:
-          description: invalid param
-          content: {}
-    post:
-      tags:
-      - Evaluate
-      summary: Evaluate the ML model
-      description: Evaluate the ML model
-      operationId: evaluate_ml_model
-      parameters:
-      - name: ml_model_id
-        in: query
-        description: ML Model Id
-        required: true
-        schema:
-          type: integer
-      - name: evaluation_dataset_id
-        in: query
-        description: evaluation_dataset_id
-        schema:
-          type: integer
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EvaluationJobInfo'
-        400:
-          description: invalid params
-          content: {}
-  /prediction:
+                description: The table specs read.
+                items:
+                  $ref: "#/components/schemas/TableSpec"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}/tableSpecs/{tableSpec}/columnSpecs:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+      - $ref: '#/components/parameters/tableSpec'
     get:
       tags:
-      - Predict
-      summary: Get the Prediction Result
-      description: Get the Prediction Result
-      operationId: get_prediction_res
-      parameters:
-      - name: prediction_job_id
-        in: query
-        description: Prediction Job ID
-        required: true
-        schema:
-          type: integer
+      - Dataset
+      description: Lists column specs in a table spec.
+      operationId: automl.projects.locations.datasets.tableSpecs.columnSpecs.list
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PredictionJobResult'
-        400:
-          description: invalid param
-          content: {}
+                description: The column specs read.
+                items:
+                  $ref: "#/components/schemas/ColumnSpec"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/datasets/{dataset}/annotationSpecs/{annotationSpec}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/dataset'
+      - $ref: '#/components/parameters/annotationSpec'
+    get:
+      operationId: automl.namespaces.datasets.annotationSpecs.get
+      description: Gets an AnnotationSpec.
+      tags:
+        - Dataset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnotationSpec'
+  /namespaces/{namespace}/models:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    get:
+      tags:
+      - Model
+      description: Lists models in the namespace.
+      operationId: automl.namespaces.models.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Model"
+                type: array
+          description: Successful response
     post:
       tags:
-      - Predict
-      summary: Prediction by the ML model
-      description: Prediction by the ML model
-      operationId: predict_by_ml_model
-      parameters:
-      - name: ml_model_id
-        in: query
-        description: ML Model Id
-        required: true
-        schema:
-          type: integer
-      - name: prediction_dataset_id
-        in: query
-        description: prediction_dataset_id
-        schema:
-          type: integer
+      - Model
+      description: Creates a model which will later contain one or more versions
+      operationId: automl.namespaces.models.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Model"
       responses:
-        200:
-          description: successful operation
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PredictionJobInfo'
+                $ref: "#/components/schemas/Model"
+          description: Successful response
+  /namespaces/{namespace}/models/{model}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/model'
+    get:
+      operationId: automl.namespaces.models.get
+      summary: Retrieve a model
+      description: Returns a model.
+      tags:
+        - Model
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+    patch:
+      tags:
+      - Model
+      summary: Modify a model
+      operationId: patch_model_by_id
+      requestBody:
+        description:
+          Updated model info. At least one key to be updated (name or admin)
+          is required.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Model"
+        required: true
+      responses:
+        200:
+          description: The updated dataset info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Model"
         400:
-          description: invalid params
+          description: Invalid dataset id value
           content: {}
+  /namespaces/{namespace}/models/{model}/versions:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    get:
+      tags:
+      - Model
+      description: Lists versions
+      operationId: automl.namespaces.models.versions.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Version"
+                type: array
+          description: Successful response
+    post:
+      tags:
+      - Model
+      description: Creates a new version of a model
+      operationId: automl.namespaces.models.versions.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Version"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+          description: Successful response
+  /namespaces/{namespace}/models/{model}/versions/{version}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
+    get:
+      operationId: automl.namespaces.models.versions.get
+      summary: Retrieve a version
+      description: Returns a version.
+      tags:
+        - Model
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+    patch:
+      tags:
+      - Model
+      summary: Modify a version
+      operationId: automl.namespaces.models.versions.patch
+      requestBody:
+        description:
+          Updated version info. At least one key to be updated
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Version"
+        required: true
+      responses:
+        200:
+          description: The updated dataset info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Version"
+        400:
+          description: Invalid version id value
+          content: {}
+    delete:
+      tags:
+      - Model
+      summary: Delete version
+      operationId: automl.namespaces.models.versions.delete
+      responses:
+        200:
+          description: successful operation
+          content: {}
+        400:
+          description: Invalid id
+          content: {}
+  /namespaces/{namespace}/trainingJob:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - TrainingJob
+      description: Creates a TrainingJob. When you train a model, several model evaluations are created for it, a summary evaluation, and one evaluation for each annotation.
+      operationId: automl.namespaces.trainingJob.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingJob"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingJob"
+          description: Successful response
+  /namespaces/{namespace}/trainingJob/{job}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/job'
+    get:
+      tags:
+      - TrainingJob
+      description: Gets a TrainingJob
+      operationId: automl.namespaces.trainingJob.get
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingJob'
+  /namespaces/{namespace}/models/{model}/versions/{version}/evaluations:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
+    get:
+      tags:
+        - Evaluation
+      description: Lists model evaluations.
+      operationId: automl.projects.locations.models.version.evaluations.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Evaluation"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/models/{model}/versions/{version}/evaluations/{evaluation}/slices:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/model'
+    - $ref: '#/components/parameters/version'
+    - $ref: '#/components/parameters/evaluation'
+    get:
+      tags:
+        - Evaluation
+      description: Lists ModelEvaluationSlices in a ModelEvaluation.
+      operationId: automl.projects.locations.models.version.evaluations.slices.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/EvaluationSlice"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/batchPredictionJobs:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - BatchPredictionJob
+      description: Creates a batchPredictionJobs.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchPredictionJob"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchPredictionJob"
+          description: Successful response
+  /namespaces/{namespace}/batchPredictionJob/{job}:
+    parameters:
+    - $ref: '#/components/parameters/namespace'
+    - $ref: '#/components/parameters/job'
+    get:
+      tags:
+      - BatchPredictionJob
+      description: Gets a batchPredictionJob
+      operationId: automl.namespaces.batchPredictionJob.get
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchPredictionJob'
+  /namespaces/{namespace}/endpoints:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    post:
+      tags:
+      - Endpoint
+      description: Creates an Endpoint, If successful, the response body contains a newly created instance of Operation.
+      operationId: automl.namespaces.endpoints.create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Endpoint"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+    get:
+      tags:
+      - Endpoint
+      description: Lists endpoints in the namespace.
+      operationId: automl.namespaces.endpoints.list
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Endpoint"
+                type: array
+          description: Successful response
+  /namespaces/{namespace}/endpoints/{endpoint}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/endpoint'
+    delete:
+      tags:
+      - Endpoint
+      description: Deletes an Endpoint.
+      operationId: automl.namespaces.endpoints.delete
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+  /namespaces/{namespace}/endpoints/{endpoint}/predict:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/endpoint'
+    post:
+      tags:
+      - Endpoint
+      description: Perform an online prediction.
+      operationId: automl.namespaces.endpoints.predict
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictResponse"
+          description: Successful response
+  /namespaces/{namespace}/operations/{operation}:
+    get:
+      description: Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+      operationId: automl.namespaces.operations.get
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - $ref: '#/components/parameters/operation'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+      tags:
+        - operations
 components:
   schemas:
-    CreatedNamespace:
-      type: object
-      properties:
-        ownerName:
-          description: The owner of the namespace.
-          type: string
-        description:
-          description: The description of the namespace.
-          type: string
-      required:
-        - ownerName
-      example:
-        ownerName: me
-        description: My first namespace!
     Namespace:
       type: object
       properties:
@@ -382,13 +1184,6 @@ components:
         updatedAt: '2019-05-09T19:49:24.201361Z'
         ownerName: me
         description: My first namespace!
-    NamespaceList:
-      type: object
-      properties:
-        namespaces:
-          type: array
-          items:
-            $ref: '#/components/schemas/Namespace'
     GeneralError:
       type: object
       properties:
@@ -418,107 +1213,232 @@ components:
         properties:
           rootCause:
             type: string
-    ResponseMsg:
+    JobState:
+      enum:
+        - UNSPECIFIED
+        - QUEUED
+        - PENDING
+        - RUNNING
+        - SUCCEEDED
+        - FAILED
+        - CANCELLING
+        - CANCELLED
+        - PAUSED
+      type: string
+      description: |
+         * `UNSPECIFIED` - The job state is unspecified.
+         * `QUEUED` - The job has been just created or resumed and processing has not yet begun.
+         * `PENDING` - The service is preparing to run the job.
+         * `RUNNING` -   The job is in progress.
+         * `SUCCEEDED` - The job completed successfully.
+         * `FAILED` - The job failed.
+         * `CANCELLING` - The job is being cancelled. From this state the job may only go to either SUCCEEDED, FAILED or CANCELLED.
+         * `CANCELLED` - The job has been cancelled.
+         * `PAUSED` - The job has been stopped, and can be resumed.
+    TrainingJob:
       type: object
       properties:
-        status:
+        jobId:
           type: string
-          format: success
-        message:
+          description: The user-specified id of the job.
+        createTime:
+          format: datetime
           type: string
-          format: message string
-    PredictionJobInfo:
-      type: object
-      properties:
-        prediction_job_id:
+          description: Output only. Time when the Job was created.
+        startTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
+        endTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was most recently updated.
+        state:
+          $ref: '#/components/schemas/JobState'
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        jobPosition:
           type: integer
           format: int64
-    PredictionJobResult:
+          description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
+        trainingInput:
+          $ref: '#/components/schemas/ModelMetadata'
+        trainingOnput:
+          type: object
+    BatchPredictionJob:
       type: object
       properties:
-        status:
+        jobId:
           type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
+          description: The user-specified id of the job.
+        createTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was created.
+        startTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
+        endTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Time when the Job was most recently updated.
+        state:
+          $ref: '#/components/schemas/JobState'
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        jobPosition:
           type: integer
           format: int64
-        accuracy:
-          type: string
-    EvaluationJobResult:
+          description: Output only. It's only effect when the job is in QUEUED state. If it's positive, it indicates the job's position in the job scheduler. It's 0 when the job is already scheduled.
+        batchPredictionJob:
+          $ref: '#/components/schemas/BatchPredictionInput'
+        batchPredictionOutput:
+          $ref: '#/components/schemas/BatchPredictionOutput'
+    DataFormat:
+      type: string
+      description: |
+         The format used to separate data instances in the source and destination files. 
+         * `UNSPECIFIED` - Unspecified format.
+         * `JSON` - Each line of the file is a JSON dictionary representing one record.
+         * `TF_RECORD` - The source file is a TFRecord file. Currently available only for input data.
+         * `TF_RECORD_GZIP` - The source file is a GZIP-compressed TFRecord file. Currently available only for input data.
+         * `CSV` -   Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
+      enum:
+        - UNSPECIFIED
+        - JSON
+        - TF_RECORD
+        - TF_RECORD_GZIP
+        - CSV
+    DedicatedResources:
       type: object
+      description: The config of resources used by the Model during the batch prediction. If the Model supports DEDICATED_RESOURCES this config may be provided (and the job will use these resources), if the Model doesn't support AUTOMATIC_RESOURCES, this config must be provided.
       properties:
-        status:
-          type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
+        startingReplicaCount:
           type: integer
-          format: int64
-        accuracy:
-          type: string
-    EvaluationJobInfo:
-      type: object
-      properties:
-        evaluation_job_id:
+          description: Immutable. The number of machine replicas used at the start of the batch operation. If not set, platform decides starting number, not greater than maxReplicaCount
+        maxReplicaCount:
           type: integer
-          format: int64
-    TrainJobStatus:
+          description: Immutable. The maximum number of machine replicas the batch operation may be scaled to. The default value is 10.
+        machineSpec:
+          type: object
+          description: Required. Immutable. The specification of a single machine.
+          properties:
+            machineType:
+              description: Immutable. The type of the machine.
+              type: string
+              enum:
+                - standard-2
+                - standard-4
+                - highmem-2
+                - highmem-4
+                - highcpu-2
+                - highcpu-4
+            acceleratorCount:
+              description: The number of accelerators to attach to the machine.
+              type: integer
+            acceleratorType:
+              description: Immutable. The type of accelerator(s) that may be attached to the machine as per acceleratorCount.
+              type: string
+              enum:
+                - UNSPECIFIED
+                - NVIDIA_TESLA_K80
+                - NVIDIA_TESLA_A100
+                - TPU_V2
+    BatchPredictionInput:
       type: object
       properties:
-        training_job_status:
+        instancesFormat:
+          # Required. The format of the input data files.
+          $ref: "#/components/schemas/DataFormat"
+        inputPaths:
+          $ref: "#/components/schemas/URI"
+        predictionsFormat:
+          # Format of the output data files, defaults to JSON.
+          $ref: "#/components/schemas/DataFormat"
+        outputPaths:
+          $ref: "#/components/schemas/URI"
+        modelName:
           type: string
-          default: pending
-          enum:
-          - finished
-          - pending
-          - in progress
-        ml_model_id:
+          description: The name of the Model resoure that produces the predictions via this job,
+        versionName:
           type: string
-    TrainJobInfoResponse:
-      type: object
+          description: specify a version of the model to use. 
+        dedicatedResources:
+          $ref: "#/components/schemas/DedicatedResources"
+    DoubleRange:
+      description: A range between two double numbers.
       properties:
-        train_job_id:
-          type: integer
-          format: int64
-    TrainJobInfoRequest:
+        end:
+          description: End of the range, exclusive.
+          format: double
+          type: number
+        start:
+          description: Start of the range, inclusive.
+          format: double
+          type: number
       type: object
+    TablesAnnotation:
+      description: Contains annotation details specific to Tables.
       properties:
-        dataset_id:
-          type: integer
-          format: int64
-        columns_ids:
-          type: array
+        baselineScore:
+          description: Output only. Stores the prediction score for the baseline example, which is defined as the example with all values set to their baseline values. This is used as part of the Sampled Shapley explanation of the model's prediction. This field is populated only when feature importance is requested. For regression models, this holds the baseline prediction for the baseline example. For classification models, this holds the baseline prediction for the baseline example for the argmax class.
+          format: float
+          type: number
+        predictionInterval:
+          $ref: "#/components/schemas/DoubleRange"
+          description: Output only. Only populated when target_column_spec has FLOAT64 data type. An interval in which the exactly correct target value has 95% chance to be in.
+        score:
+          description: Output only. A confidence estimate between 0.0 and 1.0, inclusive. A higher value means greater confidence in the returned value. For target_column_spec of FLOAT64 data type the score is not populated.
+          format: float
+          type: number
+        tablesModelColumnInfo:
+          description: Output only. Auxiliary information for each of the model's input_feature_column_specs with respect to this particular prediction. If no other fields than column_spec_name and column_display_name would be populated, then this whole field is not.
           items:
-            type: integer
-            format: int64
-    DataSetInfoResponse:
+            $ref: "#/components/schemas/TablesModelColumnInfo"
+          type: array
+        value:
+          description: "The predicted value of the row's target_column. The value depends on the column's DataType: * CATEGORY - the predicted (with the above confidence `score`) CATEGORY value. * FLOAT64 - the predicted (with above `prediction_interval`) FLOAT64 value."
       type: object
+    Row:
+      description: A representation of a row in a relational table.
       properties:
-        status:
-          type: string
-          format: success
-        data_set_id:
-          type: integer
-          format: int64
-        dataset_name:
-          type: string
-          format: dataset name
-    UploadDatasetResponse:
+        columnSpecIds:
+          description: "The resource IDs of the column specs describing the columns of the row. If set must contain, but possibly in a different order, all input feature column_spec_ids of the Model this row is being passed to. Note: The below `values` field must match order of this field, if this field is set."
+          items:
+            type: string
+          type: array
+        values:
+          description: Required. The values of the row cells, given in the same order as the column_spec_ids, or, if not set, then in the same order as input feature column_specs of the Model this row is being passed to.
+          items: {}
+          type: array
       type: object
+    TablesModelColumnInfo:
+      description: An information specific to given column and Tables Model, in context of the Model and the predictions created by it.
       properties:
-        status:
-          type: integer
-          format: int64
-        data_set_id:
-          type: integer
-          format: int64
+        columnDisplayName:
+          description: Output only. The display name of the column (same as the display_name of its ColumnSpec).
+          type: string
+        columnSpecName:
+          description: Output only. The name of the ColumnSpec describing the column. Not populated when this proto is outputted to BigQuery.
+          type: string
+        featureImportance:
+          description: "Output only. When given as part of a Model (always populated): Measurement of how much model predictions correctness on the TEST data depend on values in this column. A value between 0 and 1, higher means higher influence. These values are normalized - for all input feature columns of a given model they add to 1. When given back by Predict (populated iff feature_importance param is set) or Batch Predict (populated iff feature_importance param is set): Measurement of how impactful for the prediction returned for the given row the value in this column was. Specifically, the feature importance specifies the marginal contribution that the feature made to the prediction score compared to the baseline score. These values are computed using the Sampled Shapley method."
+          format: float
+          type: number
+      type: object
+    BatchPredictionOutput:
+      type: object
     Credentials:
       type: object
       properties:
@@ -528,17 +1448,473 @@ components:
         password:
           type: string
           format: encrypted string
-    ApiResponse:
+    User:
       type: object
       properties:
+        name:
+          type: string
+          description: The user's name
+        admin:
+          type: boolean
+          description: Whether the user is an admin
+        roles:
+          type: array
+          description: The names of roles this user has
+          items:
+            type: string
+        groups:
+          type: array
+          description: The names of groups where this user is a member
+          items:
+            type: string
+        pending:
+          type: string
+          description: The currently pending action, if any
+          enum:
+            - spawn
+            - stop
+        auth_state:
+          type: object
+          properties: {}
+          description: |
+            Authentication state of the user. Only available with admin:users:auth_state
+            scope. None otherwise.
+    Group:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The group's name
+        users:
+          type: array
+          description: The names of users who are members of this group
+          items:
+            type: string
+        roles:
+          type: array
+          description: The names of roles this group has
+          items:
+            type: string
+    Role:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The role's name
+        description:
+          type: string
+          description: The role's description
+        scopes:
+          type: array
+          description: Roles are collections of scopes that specify the level of what a client is allowed to do
+          items:
+            type: string
+    RequestIdentity:
+      description: |
+        The model for the entity making the request.
+        Extends User model to add information about the specific credentials (e.g. session).
+      allOf:
+        - type: object
+          oneOf:
+            - $ref: "#/components/schemas/User"
+          discriminator:
+            propertyName: kind
+            mapping:
+              user: "#/components/schemas/User"
+        - type: object
+          properties:
+            session_id:
+              type: string
+              nullable: true
+              description: |
+                The session id associated with the request's OAuth token, if any.
+                null, if the request token not associated with a session id.
+
+                Added in 2.0.
+            scopes:
+              type: array
+              description: |
+                The list of all expanded scopes the request credentials have access to.
+
+                Added in 2.0.
+              items:
+                type: string
+              example:
+                - "read:users"
+    URI:
+      oneOf:
+        - type: string
+          description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+          example: s3://datasets/train.csv
+        - type: array
+          description: multiple files
+          items:
+            type: string
+            description: Paths (URIs) to the Minio buckets containing the training data. There can be more than one.
+            example: s3://datasets/train.csv
+    Dataset:
+      description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
+      properties:
+        createTime:
+          description: Output only. Timestamp when this dataset was created.
+          format: datetime
+          type: string
+        description:
+          description: User-provided description of the dataset. The description can be up to 25000 characters long.
+          type: string
+        namespace:
+          type: string
+          description: The namespace of the dataset.
+        name:
+          type: string
+          description: Output only. The resource name of the Dataset.
+        displayName:
+          description: Required. The user-defined name of the Dataset. The name can be up to 128 characters long and can be consist of any UTF-8 characters.
+          type: string
+        uri:
+          # description: Paths (URIs) to the MinIO buckets containing the training data. There can be more than one. Each URI has the form, s3://datasets/train.csv
+          $ref: "#/components/schemas/URI"
+      type: object
+    TableSpec:
+      description: A specification of a relational table. The table's schema is represented via its child column specs. 
+      properties:
+        columnCount:
+          description: Output only. The number of columns of the table. That is, the number of child ColumnSpec-s.
+          format: int64
+          type: string
+        name:
+          description: Output only. The resource name of the table spec. 
+          type: string
+        rowCount:
+          description: Output only. The number of rows (i.e. examples) in the table.
+          format: int64
+          type: string
+        validRowCount:
+          description: Output only. The number of valid rows (i.e. without values that don't match DataType-s of their columns).
+          format: int64
+          type: string
+        uri:
+          $ref: "#/components/schemas/URI"
+      type: object
+    ColumnSpec:
+      type: object
+      description: A representation of a column in a relational table. 
+      properties:
+        name:
+          type: string
+          description: Output only. The resource name of the column specs. 
+        dataType:
+          enum:
+            - UNSPECIFIED
+            - FLOAT64
+            - TIMESTAMP
+            - STRING
+            - CATEGORY
+          type: string
+          description: The data type of elements stored in the column.
+    AnnotationSpec:
+      description: A definition of an annotation spec.
+      properties:
+        displayName:
+          description: Required. The name of the annotation spec to show in the interface. The name can be up to 32 characters long and must match the regexp `[a-zA-Z0-9_]+`.
+          type: string
+        name:
+          description: Output only. Resource name of the annotation spec. 
+          type: string
+        createTime:
+          format: datetime
+          type: string
+          description: Output only. Timestamp when this AnnotationSpec was created.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. Timestamp when AnnotationSpec was last updated.
+      type: object
+    ModelMetadata:
+      description: Union field model_metadata. The model metadata that is specific to the problem type. Must match the metadata type of the dataset used to train the model. model_metadata can be only one of the following
+      oneOf:
+        - $ref: '#/components/schemas/TabularModelMetadata'
+    TabularModelMetadata:
+      type: object
+      description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
+      properties:
+        name:
+          type: string
+          description: The resource name of the Model.
+        modelType:
+          description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
+          enum:
+            - Tabular
+          type: string
+        version:
+          type: string
+          description: The resource name of the Version.
+        datasetId:
+          description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
+          type: string
+        disableEarlyStopping:
+          description: This disables the early stopping feature. By default, the early stopping feature is enabled, which means ends model training when detects that no more improvents can be made.
+          type: boolean
+        optimizationObjective:
+          description: 'Objective function the model is optimizing towards. The training process creates a model that maximizes/minimizes the value of the objective function over the validation set. The supported optimization objectives depend on the prediction type. If the field is not set, a default objective function is used. CLASSIFICATION_BINARY: "MAXIMIZE_AU_ROC" (default) - Maximize the area under the receiver operating characteristic (ROC) curve. "MINIMIZE_LOG_LOSS" - Minimize log loss. "MAXIMIZE_AU_PRC" - Maximize the area under the precision-recall curve. "MAXIMIZE_PRECISION_AT_RECALL" - Maximize precision for a specified recall value. "MAXIMIZE_RECALL_AT_PRECISION" - Maximize recall for a specified precision value. CLASSIFICATION_MULTI_CLASS : "MINIMIZE_LOG_LOSS" (default) - Minimize log loss. REGRESSION: "MINIMIZE_RMSE" (default) - Minimize root-mean-squared error (RMSE). "MINIMIZE_MAE" - Minimize mean-absolute error (MAE). "MINIMIZE_RMSLE" - Minimize root-mean-squared log error (RMSLE).'
+          type: string
+        optimizationObjectivePrecisionValue:
+          description: Required when optimization_objective is "MAXIMIZE_RECALL_AT_PRECISION". Must be between 0 and 1, inclusive.
+          format: float
+          type: number
+        optimizationObjectiveRecallValue:
+          description: Required when optimization_objective is "MAXIMIZE_PRECISION_AT_RECALL". Must be between 0 and 1, inclusive.
+          format: float
+          type: number
+        fractionSplit:
+          type: object
+          properties:
+            trainingFraction:
+              format: float
+              type: number
+              description: The fraction of the input data that is to be used to train the Model.
+            validationFraction:
+              format: float
+              type: number
+              description: The fraction of the input data that is to be used to validate the Model.
+            testFraction:
+              format: float
+              type: number
+              description: The fraction of the input data that is to be used to evaluate the Model.
+        targetColumnSpec:
+          $ref: '#/components/schemas/ColumnSpec'
+    Model:
+      type: object
+      description: Represents a machine learning solution.
+      properties:
+        name:
+          type: string
+          description: The resource name of the Model.
+        displayName:
+          type: string
+          description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
+        description:
+          type: string
+          description: Optional. The description specified for the model when it was created.
+        defaultVersion:
+          type: string
+          description: Output only. The default version of the model. This version will be used to handle prediction requests that do not specify a version.
+        createTime:
+          description: Output only. Timestamp when this model was created.
+          type: string
+        updateTime:
+          description: Output only. Timestamp when this Model was most recently updated.
+          type: string
+        deploymentState:
+          description: Output only. Deployment state of the model. A model can only serve prediction requests after it gets deployed.
+          enum:
+            - DEPLOYMENT_STATE_UNSPECIFIED
+            - DEPLOYED
+            - UNDEPLOYED
+          type: string
+        modelMetadata:
+          $ref: '#/components/schemas/ModelMetadata'
+    Version:
+      type: object
+      description: Represents a version of the model.
+      properties:
+        name:
+          type: string
+          description: Required. The resource name of the Version.
+        displayName:
+          type: string
+          description: Required. The display name of the Version. 
+        description:
+          type: string
+          description: Optional. The description specified for the model when it was created.
+        createTime:
+          description: Output only. Timestamp when this model was created.
+          type: string
+        updateTime:
+          description: Output only. Timestamp when this Model was most recently updated.
+          type: string
+        errorMessage:
+          description: Output only. The details of a failure or a cancellation.
+          type: string
+        state:
+          enum:
+            - Draft
+            - Training
+            - Ready
+            - Failed
+          type: string
+          description: |
+             * `Draft` - The version state is unspecified.
+             * `Ready` - The version is ready for prediction.
+             * `Training` - The version is being trained. New versions.patch and versions.delete requests will fail if a version is in the Training state.
+             * `Failed` - errorMessage should contain the details of the failure.
+        modelMetadata:
+          $ref: '#/components/schemas/ModelMetadata'
+    EvaluationMetrics:
+      description: Evaluation metrics of the Model. 
+      oneOf:
+        - $ref: '#/components/schemas/ClassificationEvaluationMetrics'
+        - $ref: '#/components/schemas/RegressionEvaluationMetrics'
+    ClassificationEvaluationMetrics:
+      type: object
+    RegressionEvaluationMetrics:
+      type: object
+    ModelExplanation:
+      type: object
+      description: Aggregated explanation metrics for the Model's prediction output over the data this ModelEvaluation uses. This field is populated only if the Model is evaluated with explanations, and only for AutoML tabular Models.
+      properties:
+        meanAttributions:
+          type: array
+          description: Aggregated attributions explaining the Model's prediction outputs over the set of instances. The attributions are grouped by outputs.For Models that predict only one output, such as regression Models that predict only one score, there is only one attibution that explains the predicted output. For Models that predict multiple outputs, such as multiclass Models that predict multiple classes, each element explains one specific item.
+          items:
+            type: object
+            properties:
+              featureAttributions:
+                type: object
+                description: Attributions of each explained feature. Automl platform shows you how much each feature impacts a model. The values are provided as a percentage for each feature, the higher the percentage, the more strongly that feature impacted model training. Review this information to ensure that all of the most important features make sense for your data and business problem.
+            
+    Evaluation:
+      type: object
+      description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
+      properties:
+        name:
+          description: "Output only. Resource name of the model evaluation"
+          type: string
+        performance:
+          type: string
+          description: model performance rating
+          enum:
+            - Excellent
+            - Great
+            - Good, 
+            - Okay
+            - Poor
+        sliceDimensions:
+          type: array
+          description: Output only. All possible dimensions of ModelEvaluationSlices. 
+          items:
+            type: string
+            example: AnnotationSpec
+        metrics:
+          $ref: '#/components/schemas/EvaluationMetrics'
+        modelExplanation:
+          $ref: '#/components/schemas/ModelExplanation'
+    EvaluationSlice:
+      allOf:
+        - $ref: '#/components/schemas/Evaluation'
+        - type: object
+          properties:
+            slice:
+              type: object
+              description: Output only. The slice of the test data that is used to evaluate the Model.
+              properties:
+                dimension:
+                  description: Output only. The dimension of the slice. Well-known dimensions are, annotationSpec, This slice is on the test data that has either ground truth or prediction with AnnotationSpec.display_name equals to value.
+                  type: string
+                  example: annotationSpec
+                value:
+                  description: Output only. The value of the dimension in this slice.
+                  type: string
+    Endpoint:
+      type: object
+      properties:
+        modelName:
+          type: string
+          description: The name of the Model resoure that produces the predictions via this job,
+        versionName:
+          type: string
+          description: specify a version of the model to use. 
+        dedicatedResources:
+          $ref: "#/components/schemas/DedicatedResources"
+    Status:
+      description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
+      properties:
         code:
-          type: integer
+          description: The status code, which should be an enum value
           format: int32
-        type:
-          type: string
+          type: integer
+        details:
+          description: A list of messages that carry the error details. There is a common set of message types for APIs to use.
+          items:
+            additionalProperties:
+              description: Properties of the object. Contains field @type with type URL.
+            type: object
+          type: array
         message:
+          description: A developer-facing error message, which should be in English. 
           type: string
+      type: object
+    Operation:
+      description: This resource represents a long-running operation that is the result of a network API call. Some requests start long-running operations that require time to complete. These requests return an operation name, which you can use to view the operation's status or cancel the operation. Most of the API call return as quickly as possible, and provide a complete response. However, there are two kinds of asynchronous operations that you should understand - jobs and long-running operations. When you start an asynchronous operation, you usually want to know when it completes. The process for getting status is different for jobs and long-running operations
+      properties:
+        done:
+          description: If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.
+          type: boolean
+        error:
+          # description: The error result of the operation in case of failure or cancellation.
+          $ref: '#/components/schemas/Status'
+        metadata:
+          additionalProperties:
+            description: Properties of the object. Contains field @type with type URL.
+          description: Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.
+          type: object
+        name:
+          description: The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.
+          type: string
+        response:
+          additionalProperties:
+            description: Properties of the object. Contains field @type with type URL.
+          description: The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+          type: object
+      type: object
+    ExamplePayload:
+      description: Example data used for training or prediction.
+      properties:
+        row:
+          $ref: "#/components/schemas/Row"
+          description: Example relational table row.
+      type: object
+    AnnotationPayload:
+      description: Contains annotation information that is relevant to AutoML.
+      properties:
+        annotationSpecId:
+          description: Output only . The resource ID of the annotation spec that this annotation pertains to. The annotation spec comes from either an ancestor dataset, or the dataset that was used to train the model in use.
+          type: string
+        displayName:
+          description: Output only. The value of display_name when the model was trained. Because this field returns a value at model training time, for different models trained using the same dataset, the returned value could be different as model owner could update the `display_name` between any two model training.
+          type: string
+        tables:
+          $ref: "#/components/schemas/TablesAnnotation"
+          description: Annotation details for Tables.
+      type: object
+    PredictRequest:
+      description: Request message for PredictionService.Predict.
+      properties:
+        parameters:
+          additionalProperties:
+            type: string
+          description: "Additional domain-specific parameters, any string must be up to 25000 characters long. * For Image Classification: `score_threshold` - (float) A value from 0.0 to 1.0. When the model makes predictions for an image, it will only produce results that have at least this confidence score. The default is 0.5. * For Image Object Detection: `score_threshold` - (float) When Model detects objects on the image, it will only produce bounding boxes which have at least this confidence score. Value in 0 to 1 range, default is 0.5. `max_bounding_box_count` - (int64) No more than this number of bounding boxes will be returned in the response. Default is 100, the requested value may be limited by server. * For Tables: feature_importance - (boolean) Whether feature importance should be populated in the returned TablesAnnotation. The default is false."
+          type: object
+        payload:
+          $ref: "#/components/schemas/ExamplePayload"
+          description: Required. Payload to perform a prediction on. The payload must match the problem type that the model was trained to solve.
+      type: object
+    PredictResponse:
+      description: Response message for PredictionService.Predict.
+      properties:
+        payload:
+          description: Prediction result. Translation and Text Sentiment will return precisely one payload.
+          items:
+            $ref: "#/components/schemas/AnnotationPayload"
+          type: array
+      type: object
   parameters:
+    access_token:
+      description: OAuth access token.
+      in: query
+      name: access_token
+      schema:
+        type: string
     limit:
       name: limit
       in: query
@@ -565,9 +1941,99 @@ components:
         type: string
         maxLength: 1024
         example: my-namespace
+    job:
+      name: job
+      in: path
+      description: The name of the job.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-job
+    dataset:
+      name: dataset
+      in: path
+      description: The resource name of the dataset.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-dataset
+    tableSpec:
+      name: tableSpec
+      in: path
+      description: The resource name of the tableSpec.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-tableSpec
+    annotationSpec:
+      name: annotationSpec
+      in: path
+      description: The resource name of the annotationSpec.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-annotationSpec
+    model:
+      name: model
+      in: path
+      description: The resource name of the model.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-model
+    version:
+      name: version
+      in: path
+      description: The resource name of the version.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: v1
+    evaluation:
+      name: evaluation
+      in: path
+      description: The resource name of the evaluation.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    slice:
+      name: slice
+      in: path
+      description: The resource name of the slice.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    endpoint:
+      name: endpoint
+      in: path
+      description: The resource name of the endpoint.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    operation:
+      name: operation
+      in: path
+      description: The resource name of the operation.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
   responses:
     NotFound:
-      description: Entity not found.
+      description: The specified resource was not found
+      content: {}
+    Unauthorized:
+      description: Authentication/Authorization error
+      content: {}
     IllegalInput:
       description: Illegal input for operation.
     GeneralError:
@@ -577,15 +2043,40 @@ components:
           schema:
             $ref: '#/components/schemas/GeneralError'
   securitySchemes:
-    petstore_auth:
+    oauth2:
       type: oauth2
       flows:
-        implicit:
-          authorizationUrl: http://example.org/api/oauth/dialog
+        authorizationCode:
+          authorizationUrl: https://hub.example/hub/api/oauth2/authorize
+          tokenUrl: https://hub.example/hub/api/oauth2/token
           scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+            (openapi-reference): https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
+            (rbac-reference): https://jupyterhub.readthedocs.io/en/stable/rbac/index.html
+            (scope-reference): https://jupyterhub.readthedocs.io/en/stable/rbac/scopes.html
+            self:
+              The user’s own resources
+            all:
+              Contains all available scopes and grants full rights to all actions.
+            admin:users:
+              Read, write, create and delete users and their authentication
+              state.
+            admin:auth_state: Read a user’s authentication state.
+            users:
+              Read and write permissions to user models (excluding authentication state).
+            delete:users: Delete users.
+            list:users: List users, including at least their names.
+            read:users:
+              Read user models (excluding authentication state).
+            read:users:name: Read names of users.
+            read:users:groups: Read users’ group membership.
+            read:roles: Read role assignments.
+            read:roles:users: Read user role assignments.
+            read:roles:groups: Read group role assignments.
+            admin:groups: Read and write group information, create and delete groups.
+            groups: Read and write group information, including adding/removing users
+              to/from groups.
+            list:groups: List groups, including at least their names.
+            read:groups: Read group models.
+            read:groups:name: Read group names.
+            delete:groups: Delete groups.
+            read:metrics: Read prometheus metrics.
