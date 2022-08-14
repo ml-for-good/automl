@@ -5,6 +5,8 @@ info:
     We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.
     
     Please copy the entire content of this doc to the swagger editor (https://editor.swagger.io) to design the API
+    
+    Reference: [API design for errors](https://cloud.google.com/apis/design/errors)
   termsOfService: https://automl.com/terms/
   contact:
     name: API Support
@@ -1224,12 +1226,15 @@ paths:
         - Operation
 components:
   schemas:
+    ID:
+      type: integer
+      format: int64
+      description: the unique identifier of that resource
     Namespace:
       type: object
       properties:
         id:
-          description: The resource id of the namespace.
-          type: string
+          $ref: "#/components/schemas/ID"
         name:
           description: The name of the namespace.
           type: string
@@ -1247,12 +1252,6 @@ components:
         description:
           description: The description of the namespace.
           type: string
-      example:
-        name: my-namespace
-        createdAt: '2019-05-09T19:49:24.201361Z'
-        updatedAt: '2019-05-09T19:49:24.201361Z'
-        ownerName: me
-        description: My first namespace!
     JobState:
       enum:
         - UNSPECIFIED
@@ -1279,8 +1278,7 @@ components:
       type: object
       properties:
         jobId:
-          type: string
-          description: The user-specified id of the job.
+          $ref: "#/components/schemas/ID"
         createTime:
           format: datetime
           type: string
@@ -1314,8 +1312,7 @@ components:
       type: object
       properties:
         jobId:
-          type: string
-          description: The user-specified id of the job.
+          $ref: "#/components/schemas/ID"
         createTime:
           format: datetime
           type: string
@@ -1409,11 +1406,11 @@ components:
         outputPaths:
           $ref: "#/components/schemas/URI"
         modelId:
-          type: string
-          description: The id of the Model resoure that produces the predictions via this job,
+          # description: The id of the Model resoure that produces the predictions via this job
+          $ref: "#/components/schemas/ID"
         versionId:
-          type: string
-          description: specify a version of the model to use. 
+          # description: specify a version of the model to use. 
+          $ref: "#/components/schemas/ID"
         dedicatedResources:
           $ref: "#/components/schemas/DedicatedResources"
     DoubleRange:
@@ -1492,8 +1489,7 @@ components:
       type: object
       properties:
         id:
-          type: string
-          description: The resource id of the user
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The user's name
@@ -1526,8 +1522,7 @@ components:
       type: object
       properties:
         id:
-          type: string
-          description: The resource id of the group
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The group's name
@@ -1545,8 +1540,7 @@ components:
       type: object
       properties:
         id:
-          type: string
-          description: The resource id of the role
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The role's name
@@ -1605,8 +1599,7 @@ components:
       description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
       properties:
         id:
-          type: string
-          description: Output only. The resource id of the Dataset.
+          $ref: "#/components/schemas/ID"
         createTime:
           description: Output only. Timestamp when this dataset was created.
           format: datetime
@@ -1615,8 +1608,8 @@ components:
           description: User-provided description of the dataset. The description can be up to 25000 characters long.
           type: string
         namespaceId:
-          type: string
-          description: Output only. The namespace id of the dataset.
+          # description: Output only. The namespace id of the dataset.
+          $ref: "#/components/schemas/ID"
         name:
           description: Required. The user-defined name of the Dataset. The name can be up to 128 characters long and can be consist of any UTF-8 characters.
           type: string
@@ -1632,8 +1625,7 @@ components:
           format: int64
           type: string
         id:
-          description: Output only. The resource id of the table spec. 
-          type: string
+          $ref: "#/components/schemas/ID"
         rowCount:
           description: Output only. The number of rows (i.e. examples) in the table.
           format: int64
@@ -1650,8 +1642,7 @@ components:
       description: A representation of a column in a relational table. 
       properties:
         id:
-          type: string
-          description: Output only. The resource id of the column specs. 
+          $ref: "#/components/schemas/ID"
         dataType:
           enum:
             - UNSPECIFIED
@@ -1668,8 +1659,7 @@ components:
           description: Required. The name of the annotation spec to show in the interface. The name can be up to 32 characters long and must match the regexp `[a-zA-Z0-9_]+`.
           type: string
         id:
-          description: Output only. Resource id of the annotation spec. 
-          type: string
+          $ref: "#/components/schemas/ID"
         createTime:
           format: datetime
           type: string
@@ -1688,19 +1678,20 @@ components:
       description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
       properties:
         modelId:
-          type: string
-          description: The resource id of the Model.
+          # description: The resource id of the Model.
+          $ref: "#/components/schemas/ID"
         modelType:
           description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
           enum:
             - Tabular
           type: string
         versionId:
-          type: string
-          description: The resource id of the Version.
+          # description: The resource id of the Version.
+          $ref: "#/components/schemas/ID"
         datasetId:
           description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
-          type: string
+          type: integer
+          format: int64
         disableEarlyStopping:
           description: This disables the early stopping feature. By default, the early stopping feature is enabled, which means ends model training when detects that no more improvents can be made.
           type: boolean
@@ -1737,8 +1728,7 @@ components:
       description: Represents a machine learning solution.
       properties:
         id:
-          type: string
-          description: The resource id of the Model.
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
@@ -1768,8 +1758,7 @@ components:
       description: Represents a version of the model.
       properties:
         id:
-          type: string
-          description: Required. The resource id of the Version.
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: Required. The name of the Version. 
@@ -1827,8 +1816,7 @@ components:
       description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
       properties:
         id:
-          description: "Output only. Resource id of the model evaluation"
-          type: string
+          $ref: "#/components/schemas/ID"
         performance:
           type: string
           description: model performance rating
@@ -1868,11 +1856,11 @@ components:
       type: object
       properties:
         modelId:
-          type: string
-          description: The id of the Model resoure that produces the predictions via this job
+          # description: The id of the Model resoure that produces the predictions via this job
+          $ref: "#/components/schemas/ID"
         versionId:
-          type: string
-          description: specify a version of the model to use. 
+          # description: specify a version of the model to use. 
+          $ref: "#/components/schemas/ID"
         dedicatedResources:
           $ref: "#/components/schemas/DedicatedResources"
     Status:
@@ -1912,7 +1900,8 @@ components:
           type: string
         id:
           description: The resource id of the operation
-          type: string
+          type: integer
+          format: int64
         response:
           additionalProperties:
             description: Properties of the object. Contains field @type with type URL.
@@ -1934,7 +1923,8 @@ components:
       properties:
         annotationSpecId:
           description: Output only . The resource ID of the annotation spec that this annotation pertains to. The annotation spec comes from either an ancestor dataset, or the dataset that was used to train the model in use.
-          type: string
+          type: integer
+          format: int64
         displayName:
           description: Output only. The value of display_name when the model was trained. Because this field returns a value at model training time, for different models trained using the same dataset, the returned value could be different as model owner could update the `display_name` between any two model training.
           type: string
