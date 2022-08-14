@@ -6,7 +6,7 @@ info:
     
     Please copy the entire content of this doc to the swagger editor (https://editor.swagger.io) to design the API
     
-    Reference: [API design for errors](https://cloud.google.com/apis/design/errors)
+    Reference: [API design for JSON HTTP APIs](https://cloud.google.com/apis/design/errors) [error codes for RPC APIs](https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto)
   termsOfService: https://automl.com/terms/
   contact:
     name: API Support
