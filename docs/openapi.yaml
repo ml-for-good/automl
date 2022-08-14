@@ -1238,17 +1238,17 @@ components:
         name:
           description: The name of the namespace.
           type: string
-        createdAt:
+        createTime:
           description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was created.
           type: string
           format: date-time
-        updatedAt:
+        updateTime:
           description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was updated.
           type: string
           format: date-time
-        ownerName:
+        ownerId:
           description: The owner of the namespace.
-          type: string
+          $ref: "#/components/schemas/ID"
         description:
           description: The description of the namespace.
           type: string
