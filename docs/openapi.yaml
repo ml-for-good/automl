@@ -27,7 +27,7 @@ tags:
   description: Authentication and Authorization
   externalDocs:
     url: https://stackoverflow.blog/2022/04/14/the-authorization-code-grant-in-excruciating-detail/
-- name: Namespaces
+- name: Namespace
   description: provides namespace level isolation
 - name: Role
   description: Roles can be defined or modified in the configuration file as a list of dictionaries.
@@ -140,7 +140,7 @@ paths:
       - Authorization
       summary: Request an OAuth2 token
       description: |
-        Request an OAuth2 token from an authorization code "Client credential grant type".
+        Request an OAuth2 token from an authorization code.
         This request completes the OAuth process.
       requestBody:
         content:
@@ -164,7 +164,7 @@ paths:
                   description: The grant type (always 'authorization_code')
                 code:
                   type: string
-                  description: The code provided by the authorization redirect. value = client_credentials or code
+                  description: The code provided by the authorization redirect
                 redirect_uri:
                   type: string
                   description: The redirect url
@@ -179,19 +179,10 @@ paths:
                 properties:
                   access_token:
                     type: string
-                    description: The new API token for the user.
-                  expires_in: 
-                    default: 300
-                    type: integer
-                    description: The expires time (s).
+                    description: The new API token for the user
                   token_type:
-                    default: Bearer
                     type: string
                     description: Will always be 'Bearer'
-                  scopes:
-                    default: example_role_A example_role_B
-                    type: string
-                    description: space separated defined role for role-based access control
   /namespaces/{namespace}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -200,7 +191,7 @@ paths:
       summary: Create a namespace
       description: Creates a new namespace object. A namespace enables the contextual grouping of related jobs and datasets. Namespaces must contain only letters (`a-z`, `A-Z`), numbers (`0-9`), underscores (`_`), dashes (`-`), colons (`:`), slashes (`/`), or dots (`.`). A namespace is case-insensitive with a maximum length of `1024` characters. Note jobs and datasets will be unique within a namespace, but not across namespaces.
       tags:
-        - Namespaces
+        - Namespace
       requestBody:
         content:
           application/json:
@@ -218,7 +209,7 @@ paths:
       summary: Retrieve a namespace
       description: Returns a namespace.
       tags:
-        - Namespaces
+        - Namespace
       responses:
         '200':
           description: OK
@@ -235,7 +226,7 @@ paths:
       summary: List all namespaces
       description: Returns a list of namespaces.
       tags:
-        - Namespaces
+        - Namespace
       responses:
         '200':
           description: OK
@@ -347,18 +338,13 @@ paths:
         - oauth2:
             - admin:users
       x-codegen-request-body-name: body
-  /users/{name}:
+  /users/{user}:
+    parameters:
+      - $ref: '#/components/parameters/user'
     get:
       tags:
       - User
-      summary: Get a user by name
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
+      summary: Get a user by user id
       responses:
         200:
           description: The User model
@@ -373,38 +359,10 @@ paths:
             - read:users:groups
             - read:roles:users
             - admin:auth_state
-    post:
-      tags:
-      - User
-      summary: Create a single user
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
-      responses:
-        201:
-          description: The user has been created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-      security:
-        - oauth2:
-            - admin:users
     delete:
       tags:
       - User
       summary: Delete a user
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
       responses:
         204:
           description: The user has been deleted
@@ -417,13 +375,6 @@ paths:
       - User
       summary: Modify a user
       description: Change a user's name or admin status
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
       requestBody:
         description:
           Updated user info. At least one key to be updated (name or admin)
@@ -480,18 +431,32 @@ paths:
             - read:groups
             - read:groups:name
             - read:roles:groups
-  /groups/{name}:
+    post:
+      tags:
+      - Group
+      summary: Create a group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Group"
+      responses:
+        201:
+          description: The group has been created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+      security:
+        - oauth2:
+            - admin:groups
+  /groups/{group}:
+    parameters:
+      - $ref: '#/components/parameters/group'
     get:
       tags:
       - Group
-      summary: Get a group by name
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
+      summary: Get a group 
       responses:
         200:
           description: The group model
@@ -504,38 +469,10 @@ paths:
             - read:groups
             - read:groups:name
             - read:roles:groups
-    post:
-      tags:
-      - Group
-      summary: Create a group
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
-      responses:
-        201:
-          description: The group has been created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Group"
-      security:
-        - oauth2:
-            - admin:groups
     delete:
       tags:
       - Group
       summary: Delete a group
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
       responses:
         204:
           description: The group has been deleted
@@ -543,18 +480,13 @@ paths:
       security:
         - oauth2:
             - admin:groups
-  /groups/{name}/users:
+  /groups/{group}/users:
+    parameters:
+      - $ref: '#/components/parameters/group'
     post:
       tags:
       - Group
       summary: Add users to a group
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
       requestBody:
         description: The users to add to the group
         content:
@@ -593,14 +525,6 @@ paths:
           "users": ["name1", "name2"]
         }
         ```
-
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
       responses:
         200:
           description: The users have been removed from the group
@@ -1202,6 +1126,9 @@ components:
     Namespace:
       type: object
       properties:
+        id:
+          description: The resource id of the namespace.
+          type: string
         name:
           description: The name of the namespace.
           type: string
@@ -1409,10 +1336,10 @@ components:
           $ref: "#/components/schemas/DataFormat"
         outputPaths:
           $ref: "#/components/schemas/URI"
-        modelName:
+        modelId:
           type: string
-          description: The name of the Model resoure that produces the predictions via this job,
-        versionName:
+          description: The id of the Model resoure that produces the predictions via this job,
+        versionId:
           type: string
           description: specify a version of the model to use. 
         dedicatedResources:
@@ -1492,6 +1419,9 @@ components:
     User:
       type: object
       properties:
+        id:
+          type: string
+          description: The resource id of the user
         name:
           type: string
           description: The user's name
@@ -1523,6 +1453,9 @@ components:
     Group:
       type: object
       properties:
+        id:
+          type: string
+          description: The resource id of the group
         name:
           type: string
           description: The group's name
@@ -1539,6 +1472,9 @@ components:
     Role:
       type: object
       properties:
+        id:
+          type: string
+          description: The resource id of the role
         name:
           type: string
           description: The role's name
@@ -1596,6 +1532,9 @@ components:
     Dataset:
       description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
       properties:
+        id:
+          type: string
+          description: Output only. The resource id of the Dataset.
         createTime:
           description: Output only. Timestamp when this dataset was created.
           format: datetime
@@ -1607,9 +1546,6 @@ components:
           type: string
           description: The namespace of the dataset.
         name:
-          type: string
-          description: Output only. The resource name of the Dataset.
-        displayName:
           description: Required. The user-defined name of the Dataset. The name can be up to 128 characters long and can be consist of any UTF-8 characters.
           type: string
         uri:
@@ -1623,8 +1559,8 @@ components:
           description: Output only. The number of columns of the table. That is, the number of child ColumnSpec-s.
           format: int64
           type: string
-        name:
-          description: Output only. The resource name of the table spec. 
+        id:
+          description: Output only. The resource id of the table spec. 
           type: string
         rowCount:
           description: Output only. The number of rows (i.e. examples) in the table.
@@ -1641,9 +1577,9 @@ components:
       type: object
       description: A representation of a column in a relational table. 
       properties:
-        name:
+        id:
           type: string
-          description: Output only. The resource name of the column specs. 
+          description: Output only. The resource id of the column specs. 
         dataType:
           enum:
             - UNSPECIFIED
@@ -1656,11 +1592,11 @@ components:
     AnnotationSpec:
       description: A definition of an annotation spec.
       properties:
-        displayName:
+        name:
           description: Required. The name of the annotation spec to show in the interface. The name can be up to 32 characters long and must match the regexp `[a-zA-Z0-9_]+`.
           type: string
-        name:
-          description: Output only. Resource name of the annotation spec. 
+        id:
+          description: Output only. Resource id of the annotation spec. 
           type: string
         createTime:
           format: datetime
@@ -1679,17 +1615,17 @@ components:
       type: object
       description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
       properties:
-        name:
+        modelId:
           type: string
-          description: The resource name of the Model.
+          description: The resource id of the Model.
         modelType:
           description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
           enum:
             - Tabular
           type: string
-        version:
+        versionId:
           type: string
-          description: The resource name of the Version.
+          description: The resource id of the Version.
         datasetId:
           description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
           type: string
@@ -1728,10 +1664,10 @@ components:
       type: object
       description: Represents a machine learning solution.
       properties:
-        name:
+        id:
           type: string
-          description: The resource name of the Model.
-        displayName:
+          description: The resource id of the Model.
+        name:
           type: string
           description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
         description:
@@ -1759,12 +1695,12 @@ components:
       type: object
       description: Represents a version of the model.
       properties:
+        id:
+          type: string
+          description: Required. The resource id of the Version.
         name:
           type: string
-          description: Required. The resource name of the Version.
-        displayName:
-          type: string
-          description: Required. The display name of the Version. 
+          description: Required. The name of the Version. 
         description:
           type: string
           description: Optional. The description specified for the model when it was created.
@@ -1818,8 +1754,8 @@ components:
       type: object
       description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
       properties:
-        name:
-          description: "Output only. Resource name of the model evaluation"
+        id:
+          description: "Output only. Resource id of the model evaluation"
           type: string
         performance:
           type: string
@@ -1859,10 +1795,10 @@ components:
     Endpoint:
       type: object
       properties:
-        modelName:
+        modelId:
           type: string
-          description: The name of the Model resoure that produces the predictions via this job,
-        versionName:
+          description: The id of the Model resoure that produces the predictions via this job
+        versionId:
           type: string
           description: specify a version of the model to use. 
         dedicatedResources:
@@ -1902,8 +1838,8 @@ components:
           description: Output only. Time when the operation was updated for the last time.
           format: datetime
           type: string
-        name:
-          description: The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.
+        id:
+          description: The resource id of the operation
           type: string
         response:
           additionalProperties:
@@ -1982,52 +1918,64 @@ components:
     namespace:
       name: namespace
       in: path
-      description: The name of the namespace.
+      description: The id of the namespace.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-namespace
+    user:
+      name: user
+      in: path
+      description: The id of the user.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    group:
+      name: group
+      in: path
+      description: The id of the group.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-group
     job:
       name: job
       in: path
-      description: The name of the job.
+      description: The id of the job.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-job
     dataset:
       name: dataset
       in: path
-      description: The resource name of the dataset.
+      description: The resource id of the dataset.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-dataset
     tableSpec:
       name: tableSpec
       in: path
-      description: The resource name of the tableSpec.
+      description: The resource id of the tableSpec.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-tableSpec
     annotationSpec:
       name: annotationSpec
       in: path
-      description: The resource name of the annotationSpec.
+      description: The resource id of the annotationSpec.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-annotationSpec
     model:
       name: model
       in: path
-      description: The resource name of the model.
+      description: The resource id of the model.
       required: true
       schema:
         type: string
@@ -2036,16 +1984,15 @@ components:
     version:
       name: version
       in: path
-      description: The resource name of the version.
+      description: The resource id of the version.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: v1
     evaluation:
       name: evaluation
       in: path
-      description: The resource name of the evaluation.
+      description: The resource id of the evaluation.
       required: true
       schema:
         type: string
@@ -2053,7 +2000,7 @@ components:
     slice:
       name: slice
       in: path
-      description: The resource name of the slice.
+      description: The resource id of the slice.
       required: true
       schema:
         type: string
@@ -2061,7 +2008,7 @@ components:
     endpoint:
       name: endpoint
       in: path
-      description: The resource name of the endpoint.
+      description: The resource id of the endpoint.
       required: true
       schema:
         type: string
@@ -2069,7 +2016,7 @@ components:
     operation:
       name: operation
       in: path
-      description: The resource name of the operation.
+      description: The resource id of the operation.
       required: true
       schema:
         type: string
