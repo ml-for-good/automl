@@ -132,7 +132,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorModel'
+                $ref: '#/components/schemas/Status'
       x-codegen-request-body-name: body
   /oauth2/token:
     post:
@@ -213,6 +213,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Namespace'
+        default:
+          $ref: '#/components/responses/default'
     get:
       operationId: getNamespace
       summary: Retrieve a namespace
@@ -226,6 +228,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Namespace'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces:
     get:
       operationId: getNamespaces
@@ -248,6 +252,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Namespace'
+        default:
+          $ref: '#/components/responses/default'
   /roles:
     get:
       tags:
@@ -268,6 +274,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Role"
+        default:
+          $ref: '#/components/responses/default'
       security: []
   /user:
     get:
@@ -283,6 +291,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RequestIdentity"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:users
@@ -307,6 +317,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:users
@@ -343,6 +355,8 @@ paths:
                 description: The created users
                 items:
                   $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:users
@@ -361,6 +375,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:users
@@ -376,6 +392,8 @@ paths:
         204:
           description: The user has been deleted
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:users
@@ -411,6 +429,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:users
@@ -435,6 +455,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:groups
@@ -456,6 +478,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:groups
@@ -473,6 +497,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:groups
@@ -486,6 +512,8 @@ paths:
         204:
           description: The group has been deleted
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:groups
@@ -516,6 +544,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - groups
@@ -538,6 +568,8 @@ paths:
         200:
           description: The users have been removed from the group
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - groups
@@ -587,6 +619,8 @@ paths:
         400:
           description: Invalid input
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -608,6 +642,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Dataset"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     get:
       tags:
       - Dataset
@@ -628,6 +664,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/Dataset"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -645,6 +683,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dataset'
+        default:
+          $ref: '#/components/responses/default'
     delete:
       tags:
       - Dataset
@@ -657,6 +697,8 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
     patch:
       tags:
       - Dataset
@@ -681,6 +723,8 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}/tableSpecs:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -702,6 +746,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/TableSpec"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}/tableSpecs/{tableSpec}/columnSpecs:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -722,6 +768,8 @@ paths:
                   $ref: "#/components/schemas/ColumnSpec"
                 type: array
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}/annotationSpecs/{annotationSpec}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -739,6 +787,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnnotationSpec'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -759,6 +809,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/Model"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     post:
       tags:
       - Model
@@ -776,6 +828,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Model"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -793,6 +847,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Model'
+        default:
+          $ref: '#/components/responses/default'
     patch:
       tags:
       - Model
@@ -817,6 +873,8 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -838,6 +896,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/Version"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     post:
       tags:
       - Model
@@ -855,6 +915,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Version"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions/{version}:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -873,6 +935,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
+        default:
+          $ref: '#/components/responses/default'
     patch:
       tags:
       - Model
@@ -896,6 +960,8 @@ paths:
         400:
           description: Invalid version id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
     delete:
       tags:
       - Model
@@ -908,6 +974,8 @@ paths:
         400:
           description: Invalid id
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/trainingJob:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -928,6 +996,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/TrainingJob"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/trainingJob/{job}:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -944,6 +1014,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainingJob'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions/{version}/evaluations:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -966,6 +1038,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/Evaluation"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions/{version}/evaluations/{evaluation}/slices:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -989,6 +1063,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/EvaluationSlice"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/batchPredictionJobs:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1008,6 +1084,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/BatchPredictionJob"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/batchPredictionJob/{job}:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1024,6 +1102,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatchPredictionJob'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/endpoints:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1044,6 +1124,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Operation"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     get:
       tags:
       - Endpoint
@@ -1064,6 +1146,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/Endpoint"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/endpoints/{endpoint}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1080,6 +1164,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Operation"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/endpoints/{endpoint}/predict:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1101,6 +1187,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/PredictResponse"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/operations/{operation}:
     get:
       description: Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
@@ -1115,8 +1203,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/Operation"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
       tags:
-        - operations
+        - Operation
   /namespaces/{namespace}/operations/{operation}/cancel:
     post:
       description: Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns UNIMPLEMENTED. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a Status.code of 1, corresponding to Code.CANCELLED.
@@ -1128,8 +1218,10 @@ paths:
         200:
           description: If successful, the response body is empty.
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       tags:
-        - operations
+        - Operation
 components:
   schemas:
     Namespace:
@@ -1161,35 +1253,6 @@ components:
         updatedAt: '2019-05-09T19:49:24.201361Z'
         ownerName: me
         description: My first namespace!
-    GeneralError:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-    ErrorModel:
-      type: object
-      required:
-      - message
-      - code
-      properties:
-        message:
-          type: string
-        code:
-          type: integer
-          minimum: 100
-          maximum: 600
-    ExtendedErrorModel:
-      allOf:
-      - $ref: '#/components/schemas/ErrorModel'
-      - type: object
-        required:
-        - rootCause
-        properties:
-          rootCause:
-            type: string
     JobState:
       enum:
         - UNSPECIFIED
@@ -1551,9 +1614,9 @@ components:
         description:
           description: User-provided description of the dataset. The description can be up to 25000 characters long.
           type: string
-        namespace:
+        namespaceId:
           type: string
-          description: The namespace of the dataset.
+          description: Output only. The namespace id of the dataset.
         name:
           description: Required. The user-defined name of the Dataset. The name can be up to 128 characters long and can be consist of any UTF-8 characters.
           type: string
@@ -2039,12 +2102,12 @@ components:
       content: {}
     IllegalInput:
       description: Illegal input for operation.
-    GeneralError:
-      description: General Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GeneralError'
+    default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Status'
   securitySchemes:
     oauth2:
       type: oauth2
