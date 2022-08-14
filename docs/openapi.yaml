@@ -2107,7 +2107,11 @@ components:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Status'
+              type: object
+              properties:
+                error:
+                  # description: the error schema for JSON HTTP APIs
+                  $ref: '#/components/schemas/Status'
   securitySchemes:
     oauth2:
       type: oauth2
