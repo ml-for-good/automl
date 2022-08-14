@@ -140,7 +140,7 @@ paths:
       - Authorization
       summary: Request an OAuth2 token
       description: |
-        Request an OAuth2 token from an authorization code.
+        Request an OAuth2 token from an authorization code "Client credential grant type".
         This request completes the OAuth process.
       requestBody:
         content:
@@ -164,7 +164,7 @@ paths:
                   description: The grant type (always 'authorization_code')
                 code:
                   type: string
-                  description: The code provided by the authorization redirect
+                  description: The code provided by the authorization redirect. value = client_credentials or code
                 redirect_uri:
                   type: string
                   description: The redirect url
@@ -179,10 +179,19 @@ paths:
                 properties:
                   access_token:
                     type: string
-                    description: The new API token for the user
+                    description: The new API token for the user.
+                  expires_in: 
+                    default: 300
+                    type: integer
+                    description: The expires time (s).
                   token_type:
+                    default: Bearer
                     type: string
                     description: Will always be 'Bearer'
+                  scopes:
+                    default: example_role_A example_role_B
+                    type: string
+                    description: space separated defined role for role-based access control
   /namespaces/{namespace}:
     parameters:
       - $ref: '#/components/parameters/namespace'
