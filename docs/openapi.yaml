@@ -1,26 +1,26 @@
 openapi: 3.0.1
 info:
   title: AutoML
-  description: 'We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.'
-  termsOfService: http://example.com/terms/
+  description: | 
+    We are designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and AI-powered process automation.
+    
+    Please copy the entire content of this doc to the swagger editor (https://editor.swagger.io) to design the API
+    
+    Reference: [API design for JSON HTTP APIs](https://cloud.google.com/apis/design/errors) [error codes for RPC APIs](https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto)
+  termsOfService: https://automl.com/terms/
   contact:
     name: API Support
-    url: http://www.example.com/support
-    email: support@example.com
+    url: https://automl.com/support/
+    email: support@automl.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.0.1
-externalDocs:
-  description: Please copy the entire content of this doc to the swagger editor to design the API
-  url: http://editor.swagger.io
+  version: v1beta1
 servers:
-- url: https://development.example.com/v1
-  description: Development server
-- url: https://staging.example.com/v1
-  description: Staging server
-- url: https://api.example.com/v1
-  description: Production server
+- url: https://automl.com/v1beta1
+  description: Supports latest preview features.
+- url: https://automl.com/v1
+  description: Stable
 security:
   - oauth2:
       - self
@@ -29,30 +29,32 @@ tags:
   description: Authentication and Authorization
   externalDocs:
     url: https://stackoverflow.blog/2022/04/14/the-authorization-code-grant-in-excruciating-detail/
-- name: Namespaces
+- name: Namespace
   description: provides namespace level isolation
 - name: Role
   description: Roles can be defined or modified in the configuration file as a list of dictionaries.
   externalDocs:
     url: https://jupyterhub.readthedocs.io/en/stable/rbac/roles.html#define-role-target
 - name: User
-  description: Operations about user
+  description: Management of user
   externalDocs:
     url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
 - name: Group
-  description: Operations about group
+  description: Management of group
 - name: Dataset
   description: Management of Dataset
 - name: Model
-  description: Operations about model
+  description: Management of model
 - name: TrainingJob
-  description: Operations about TrainingJob
+  description: Management of TrainingJob
 - name: Evaluation
-  description: Operations about Evaluation
+  description: Management of Evaluation
 - name: BatchPredictionJob
-  description: Operations about BatchPredictionJob
+  description: Management of BatchPredictionJob
 - name: Endpoint
-  description: Operations about Endpoint
+  description: Management of Endpoint
+- name: Operation
+  description: Management of Operation
 paths:
   /oauth2/authorize:
     get:
@@ -132,7 +134,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorModel'
+                $ref: '#/components/schemas/Status'
       x-codegen-request-body-name: body
   /oauth2/token:
     post:
@@ -140,7 +142,7 @@ paths:
       - Authorization
       summary: Request an OAuth2 token
       description: |
-        Request an OAuth2 token from an authorization code.
+        Request an OAuth2 token from an authorization code "Client credential grant type".
         This request completes the OAuth process.
       requestBody:
         content:
@@ -164,7 +166,7 @@ paths:
                   description: The grant type (always 'authorization_code')
                 code:
                   type: string
-                  description: The code provided by the authorization redirect
+                  description: The code provided by the authorization redirect. value = client_credentials or code
                 redirect_uri:
                   type: string
                   description: The redirect url
@@ -180,9 +182,18 @@ paths:
                   access_token:
                     type: string
                     description: The new API token for the user
+                  expires_in: 
+                    default: 300
+                    type: integer
+                    description: The expires time (s).
                   token_type:
+                    default: Bearer
                     type: string
                     description: Will always be 'Bearer'
+                  scopes:
+                    default: example_role_A example_role_B
+                    type: string
+                    description: space separated defined role for role-based access control
   /namespaces/{namespace}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -191,7 +202,7 @@ paths:
       summary: Create a namespace
       description: Creates a new namespace object. A namespace enables the contextual grouping of related jobs and datasets. Namespaces must contain only letters (`a-z`, `A-Z`), numbers (`0-9`), underscores (`_`), dashes (`-`), colons (`:`), slashes (`/`), or dots (`.`). A namespace is case-insensitive with a maximum length of `1024` characters. Note jobs and datasets will be unique within a namespace, but not across namespaces.
       tags:
-        - Namespaces
+        - Namespace
       requestBody:
         content:
           application/json:
@@ -204,12 +215,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Namespace'
+        default:
+          $ref: '#/components/responses/default'
     get:
       operationId: getNamespace
       summary: Retrieve a namespace
       description: Returns a namespace.
       tags:
-        - Namespaces
+        - Namespace
       responses:
         '200':
           description: OK
@@ -217,6 +230,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Namespace'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces:
     get:
       operationId: getNamespaces
@@ -226,16 +241,21 @@ paths:
       summary: List all namespaces
       description: Returns a list of namespaces.
       tags:
-        - Namespaces
+        - Namespace
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Namespace'
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Namespace'
+        default:
+          $ref: '#/components/responses/default'
   /roles:
     get:
       tags:
@@ -250,9 +270,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Role"
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Role"
+        default:
+          $ref: '#/components/responses/default'
       security: []
   /user:
     get:
@@ -268,6 +293,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RequestIdentity"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:users
@@ -286,9 +313,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:users
@@ -308,7 +340,7 @@ paths:
               properties:
                 usernames:
                   type: array
-                  description: list of usernames to create on the Hub
+                  description: list of usernames to create
                   items:
                     type: string
                 admin:
@@ -325,22 +357,19 @@ paths:
                 description: The created users
                 items:
                   $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:users
       x-codegen-request-body-name: body
-  /users/{name}:
+  /users/{user}:
+    parameters:
+      - $ref: '#/components/parameters/user'
     get:
       tags:
       - User
-      summary: Get a user by name
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
+      summary: Get a user by user id
       responses:
         200:
           description: The User model
@@ -348,6 +377,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:users
@@ -355,42 +386,16 @@ paths:
             - read:users:groups
             - read:roles:users
             - admin:auth_state
-    post:
-      tags:
-      - User
-      summary: Create a single user
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
-      responses:
-        201:
-          description: The user has been created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-      security:
-        - oauth2:
-            - admin:users
     delete:
       tags:
       - User
       summary: Delete a user
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
       responses:
         204:
           description: The user has been deleted
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:users
@@ -399,13 +404,6 @@ paths:
       - User
       summary: Modify a user
       description: Change a user's name or admin status
-      parameters:
-        - name: name
-          in: path
-          description: username
-          required: true
-          schema:
-            type: string
       requestBody:
         description:
           Updated user info. At least one key to be updated (name or admin)
@@ -433,6 +431,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:users
@@ -451,33 +451,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Group"
-      security:
-        - oauth2:
-            - read:groups
-            - read:groups:name
-            - read:roles:groups
-  /groups/{name}:
-    get:
-      tags:
-      - Group
-      summary: Get a group by name
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: The group model
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Group"
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - read:groups
@@ -487,13 +468,11 @@ paths:
       tags:
       - Group
       summary: Create a group
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Group"
       responses:
         201:
           description: The group has been created
@@ -501,39 +480,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:groups
+  /groups/{group}:
+    parameters:
+      - $ref: '#/components/parameters/group'
+    get:
+      tags:
+      - Group
+      summary: Get a group 
+      responses:
+        200:
+          description: The group model
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
+      security:
+        - oauth2:
+            - read:groups
+            - read:groups:name
+            - read:roles:groups
     delete:
       tags:
       - Group
       summary: Delete a group
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
       responses:
         204:
           description: The group has been deleted
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - admin:groups
-  /groups/{name}/users:
+  /groups/{group}/users:
+    parameters:
+      - $ref: '#/components/parameters/group'
     post:
       tags:
       - Group
       summary: Add users to a group
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
       requestBody:
         description: The users to add to the group
         content:
@@ -554,6 +546,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - groups
@@ -572,31 +566,12 @@ paths:
           "users": ["name1", "name2"]
         }
         ```
-
-      parameters:
-        - name: name
-          in: path
-          description: group name
-          required: true
-          schema:
-            type: string
-      # requestBody:
-      #   description: The users to remove from the group
-      #   content:
-      #     application/json:
-      #       schema:
-      #         type: object
-      #         properties:
-      #           users:
-      #             type: array
-      #             description: List of usernames to remove from the group
-      #             items:
-      #               type: string
-      #   required: true
       responses:
         200:
           description: The users have been removed from the group
           content: {}
+        default:
+          $ref: '#/components/responses/default'
       security:
         - oauth2:
             - groups
@@ -646,13 +621,16 @@ paths:
         400:
           description: Invalid input
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets:
     parameters:
       - $ref: '#/components/parameters/namespace'
     post:
       tags:
       - Dataset
-      description: Creates a dataset.
+      summary: Creates a dataset
+      description: Tabular training data in MinIO Storage is not imported into platform. (When you import from local files, they are imported into MinIO Storage.) When you create a dataset with tabular data, the data is associated with the dataset. Changes you make to your data source in MinIO Storage after dataset creation are incorporated into models subsequently trained with that dataset. A snapshot of the dataset is taken when model training begins.
       operationId: automl.namespaces.datasets.create
       requestBody:
         content:
@@ -666,6 +644,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Dataset"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     get:
       tags:
       - Dataset
@@ -679,10 +659,15 @@ paths:
           content:
             application/json:
               schema:
-                items: 
-                  $ref: "#/components/schemas/Dataset"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Dataset"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -700,6 +685,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dataset'
+        default:
+          $ref: '#/components/responses/default'
     delete:
       tags:
       - Dataset
@@ -712,6 +699,8 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
     patch:
       tags:
       - Dataset
@@ -736,6 +725,8 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}/tableSpecs:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -750,11 +741,15 @@ paths:
           content:
             application/json:
               schema:
-                description: The table specs read.
-                items:
-                  $ref: "#/components/schemas/TableSpec"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TableSpec"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}/tableSpecs/{tableSpec}/columnSpecs:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -775,6 +770,8 @@ paths:
                   $ref: "#/components/schemas/ColumnSpec"
                 type: array
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/datasets/{dataset}/annotationSpecs/{annotationSpec}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -792,6 +789,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnnotationSpec'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -805,10 +804,15 @@ paths:
           content:
             application/json:
               schema:
-                items: 
-                  $ref: "#/components/schemas/Model"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Model"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     post:
       tags:
       - Model
@@ -826,6 +830,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Model"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -843,6 +849,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Model'
+        default:
+          $ref: '#/components/responses/default'
     patch:
       tags:
       - Model
@@ -867,6 +875,8 @@ paths:
         400:
           description: Invalid dataset id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -881,10 +891,15 @@ paths:
           content:
             application/json:
               schema:
-                items: 
-                  $ref: "#/components/schemas/Version"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Version"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     post:
       tags:
       - Model
@@ -902,6 +917,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Version"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions/{version}:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -920,6 +937,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
+        default:
+          $ref: '#/components/responses/default'
     patch:
       tags:
       - Model
@@ -943,6 +962,8 @@ paths:
         400:
           description: Invalid version id value
           content: {}
+        default:
+          $ref: '#/components/responses/default'
     delete:
       tags:
       - Model
@@ -955,6 +976,8 @@ paths:
         400:
           description: Invalid id
           content: {}
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/trainingJob:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -975,6 +998,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/TrainingJob"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/trainingJob/{job}:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -991,6 +1016,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainingJob'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions/{version}/evaluations:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1006,10 +1033,15 @@ paths:
           content:
             application/json:
               schema:
-                items: 
-                  $ref: "#/components/schemas/Evaluation"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Evaluation"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/models/{model}/versions/{version}/evaluations/{evaluation}/slices:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1026,10 +1058,15 @@ paths:
           content:
             application/json:
               schema:
-                items: 
-                  $ref: "#/components/schemas/EvaluationSlice"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EvaluationSlice"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/batchPredictionJobs:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1049,6 +1086,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/BatchPredictionJob"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/batchPredictionJob/{job}:
     parameters:
     - $ref: '#/components/parameters/namespace'
@@ -1065,6 +1104,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BatchPredictionJob'
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/endpoints:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1085,6 +1126,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/Operation"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
     get:
       tags:
       - Endpoint
@@ -1098,10 +1141,33 @@ paths:
           content:
             application/json:
               schema:
-                items: 
-                  $ref: "#/components/schemas/Endpoint"
-                type: array
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Endpoint"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
+  /namespaces/{namespace}/endpoints/{endpoint}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/endpoint'
+    delete:
+      tags:
+      - Endpoint
+      description: Deletes an Endpoint.
+      operationId: automl.namespaces.endpoints.delete
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+        default:
+          $ref: '#/components/responses/default'
   /namespaces/{namespace}/endpoints/{endpoint}/predict:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -1123,63 +1189,69 @@ paths:
               schema:
                 $ref: "#/components/schemas/PredictResponse"
           description: Successful response
+        default:
+          $ref: '#/components/responses/default'
+  /namespaces/{namespace}/operations/{operation}:
+    get:
+      description: Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.
+      operationId: automl.namespaces.operations.get
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - $ref: '#/components/parameters/operation'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+          description: Successful response
+        default:
+          $ref: '#/components/responses/default'
+      tags:
+        - Operation
+  /namespaces/{namespace}/operations/{operation}/cancel:
+    post:
+      description: Starts asynchronous cancellation on a long-running operation. The server makes a best effort to cancel the operation, but success is not guaranteed. If the server doesn't support this method, it returns Code.UNIMPLEMENTED. Clients can use Operations.GetOperation or other methods to check whether the cancellation succeeded or whether the operation completed despite cancellation. On successful cancellation, the operation is not deleted; instead, it becomes an operation with an Operation.error value with a Status.code corresponding to Code.CANCELLED.
+      operationId: automl.namespaces.operations.cancel
+      parameters:
+        - $ref: '#/components/parameters/namespace'
+        - $ref: '#/components/parameters/operation'
+      responses:
+        200:
+          description: If successful, the response body is empty.
+          content: {}
+        default:
+          $ref: '#/components/responses/default'
+      tags:
+        - Operation
 components:
   schemas:
+    ID:
+      type: integer
+      format: int64
+      description: the unique identifier of that resource
     Namespace:
       type: object
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         name:
           description: The name of the namespace.
           type: string
-        createdAt:
+        createTime:
           description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was created.
           type: string
           format: date-time
-        updatedAt:
+        updateTime:
           description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was updated.
           type: string
           format: date-time
-        ownerName:
+        ownerId:
           description: The owner of the namespace.
-          type: string
+          $ref: "#/components/schemas/ID"
         description:
           description: The description of the namespace.
           type: string
-      example:
-        name: my-namespace
-        createdAt: '2019-05-09T19:49:24.201361Z'
-        updatedAt: '2019-05-09T19:49:24.201361Z'
-        ownerName: me
-        description: My first namespace!
-    GeneralError:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
-    ErrorModel:
-      type: object
-      required:
-      - message
-      - code
-      properties:
-        message:
-          type: string
-        code:
-          type: integer
-          minimum: 100
-          maximum: 600
-    ExtendedErrorModel:
-      allOf:
-      - $ref: '#/components/schemas/ErrorModel'
-      - type: object
-        required:
-        - rootCause
-        properties:
-          rootCause:
-            type: string
     JobState:
       enum:
         - UNSPECIFIED
@@ -1206,8 +1278,7 @@ components:
       type: object
       properties:
         jobId:
-          type: string
-          description: The user-specified id of the job.
+          $ref: "#/components/schemas/ID"
         createTime:
           format: datetime
           type: string
@@ -1241,8 +1312,7 @@ components:
       type: object
       properties:
         jobId:
-          type: string
-          description: The user-specified id of the job.
+          $ref: "#/components/schemas/ID"
         createTime:
           format: datetime
           type: string
@@ -1280,7 +1350,7 @@ components:
          * `JSON` - Each line of the file is a JSON dictionary representing one record.
          * `TF_RECORD` - The source file is a TFRecord file. Currently available only for input data.
          * `TF_RECORD_GZIP` - The source file is a GZIP-compressed TFRecord file. Currently available only for input data.
-         * `CSV` - 	Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
+         * `CSV` -   Values are comma-separated rows, with keys in a separate file. Currently available only for output data.
       enum:
         - UNSPECIFIED
         - JSON
@@ -1335,12 +1405,12 @@ components:
           $ref: "#/components/schemas/DataFormat"
         outputPaths:
           $ref: "#/components/schemas/URI"
-        modelName:
-          type: string
-          description: The name of the Model resoure that produces the predictions via this job,
-        versionName:
-          type: string
-          description: specify a version of the model to use. 
+        modelId:
+          # description: The id of the Model resoure that produces the predictions via this job
+          $ref: "#/components/schemas/ID"
+        versionId:
+          # description: specify a version of the model to use. 
+          $ref: "#/components/schemas/ID"
         dedicatedResources:
           $ref: "#/components/schemas/DedicatedResources"
     DoubleRange:
@@ -1418,6 +1488,8 @@ components:
     User:
       type: object
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The user's name
@@ -1449,6 +1521,8 @@ components:
     Group:
       type: object
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The group's name
@@ -1465,6 +1539,8 @@ components:
     Role:
       type: object
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         name:
           type: string
           description: The role's name
@@ -1522,6 +1598,8 @@ components:
     Dataset:
       description: A workspace for solving a single, particular machine learning (ML) problem. A workspace contains examples that may be annotated.
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         createTime:
           description: Output only. Timestamp when this dataset was created.
           format: datetime
@@ -1529,16 +1607,14 @@ components:
         description:
           description: User-provided description of the dataset. The description can be up to 25000 characters long.
           type: string
-        namespace:
-          type: string
-          description: The namespace of the dataset.
+        namespaceId:
+          # description: Output only. The namespace id of the dataset.
+          $ref: "#/components/schemas/ID"
         name:
-          type: string
-          description: The name of the dataset.
-        dataset_id:
-          description: "The resource id of the dataset"
+          description: Required. The user-defined name of the Dataset. The name can be up to 128 characters long and can be consist of any UTF-8 characters.
           type: string
         uri:
+          # description: Paths (URIs) to the MinIO buckets containing the training data. There can be more than one. Each URI has the form, s3://datasets/train.csv
           $ref: "#/components/schemas/URI"
       type: object
     TableSpec:
@@ -1548,9 +1624,8 @@ components:
           description: Output only. The number of columns of the table. That is, the number of child ColumnSpec-s.
           format: int64
           type: string
-        name:
-          description: Output only. The resource name of the table spec. 
-          type: string
+        id:
+          $ref: "#/components/schemas/ID"
         rowCount:
           description: Output only. The number of rows (i.e. examples) in the table.
           format: int64
@@ -1566,9 +1641,8 @@ components:
       type: object
       description: A representation of a column in a relational table. 
       properties:
-        name:
-          type: string
-          description: Output only. The resource name of the column specs. 
+        id:
+          $ref: "#/components/schemas/ID"
         dataType:
           enum:
             - UNSPECIFIED
@@ -1581,12 +1655,11 @@ components:
     AnnotationSpec:
       description: A definition of an annotation spec.
       properties:
-        displayName:
+        name:
           description: Required. The name of the annotation spec to show in the interface. The name can be up to 32 characters long and must match the regexp `[a-zA-Z0-9_]+`.
           type: string
-        name:
-          description: Output only. Resource name of the annotation spec. 
-          type: string
+        id:
+          $ref: "#/components/schemas/ID"
         createTime:
           format: datetime
           type: string
@@ -1604,20 +1677,21 @@ components:
       type: object
       description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
       properties:
-        name:
-          type: string
-          description: The resource name of the Model.
+        modelId:
+          # description: The resource id of the Model.
+          $ref: "#/components/schemas/ID"
         modelType:
           description: The model type that is specific to the problem type. Must match the metadata type of the dataset used to train the model. 
           enum:
             - Tabular
           type: string
-        version:
-          type: string
-          description: The resource name of the Version.
+        versionId:
+          # description: The resource id of the Version.
+          $ref: "#/components/schemas/ID"
         datasetId:
           description: Optional. The resource ID of the dataset used to create the model. The dataset must come from the same namespace.
-          type: string
+          type: integer
+          format: int64
         disableEarlyStopping:
           description: This disables the early stopping feature. By default, the early stopping feature is enabled, which means ends model training when detects that no more improvents can be made.
           type: boolean
@@ -1653,10 +1727,9 @@ components:
       type: object
       description: Represents a machine learning solution.
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         name:
-          type: string
-          description: The resource name of the Model.
-        displayName:
           type: string
           description: The name specified for the model when it was created. The model name must be unique within the namespace it is created in.
         description:
@@ -1684,12 +1757,11 @@ components:
       type: object
       description: Represents a version of the model.
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         name:
           type: string
-          description: Required. The resource name of the Version.
-        displayName:
-          type: string
-          description: Required. The display name of the Version. 
+          description: Required. The name of the Version. 
         description:
           type: string
           description: Optional. The description specified for the model when it was created.
@@ -1743,9 +1815,8 @@ components:
       type: object
       description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
       properties:
-        name:
-          description: "Output only. Resource name of the model evaluation"
-          type: string
+        id:
+          $ref: "#/components/schemas/ID"
         performance:
           type: string
           description: model performance rating
@@ -1784,53 +1855,60 @@ components:
     Endpoint:
       type: object
       properties:
-        modelName:
-          type: string
-          description: The name of the Model resoure that produces the predictions via this job,
-        versionName:
-          type: string
-          description: specify a version of the model to use. 
+        modelId:
+          # description: The id of the Model resoure that produces the predictions via this job
+          $ref: "#/components/schemas/ID"
+        versionId:
+          # description: specify a version of the model to use. 
+          $ref: "#/components/schemas/ID"
         dedicatedResources:
           $ref: "#/components/schemas/DedicatedResources"
     Status:
       description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
       properties:
         code:
-          description: The status code, which should be an enum value
+          description: The status code, which should be an enum value.
           format: int32
           type: integer
         details:
           description: A list of messages that carry the error details. There is a common set of message types for APIs to use.
           items:
             additionalProperties:
-              description: Properties of the object. Contains field @type with type URL.
+              description: Properties of the object. 
             type: object
           type: array
         message:
-          description: A developer-facing error message, which should be in English. 
+          description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the Status.details field, or localized by the client.
           type: string
       type: object
     Operation:
-      description: This resource represents a long-running operation that is the result of a network API call.
+      description: This resource represents a long-running operation that is the result of a network API call. Some requests start long-running operations that require time to complete. These requests return an operation name, which you can use to view the operation's status or cancel the operation. Most of the API call return as quickly as possible, and provide a complete response. However, there are two kinds of asynchronous operations that you should understand - jobs and long-running operations. When you start an asynchronous operation, you usually want to know when it completes. The process for getting status is different for jobs and long-running operations
       properties:
         done:
           description: If the value is `false`, it means the operation is still in progress. If `true`, the operation is completed, and either `error` or `response` is available.
           type: boolean
         error:
-          description: The error result of the operation in case of failure or cancellation.
+          # description: The error result of the operation in case of failure or cancellation.
           $ref: '#/components/schemas/Status'
-        metadata:
-          additionalProperties:
-            description: Properties of the object. Contains field @type with type URL.
-          description: Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any.
-          type: object
-        name:
-          description: The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`.
+        createTime:
+          description: Output only. Time when the operation was created.
+          format: datetime
           type: string
+        updateTime:
+          description: Output only. Time when the operation was updated for the last time.
+          format: datetime
+          type: string
+        id:
+          description: The resource id of the operation
+          type: integer
+          format: int64
         response:
           additionalProperties:
             description: Properties of the object. Contains field @type with type URL.
-          description: The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+          description: | 
+            'The normal response of the operation in case of success. If the original method returns no data on success, such as `Delete`, the response is empty. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+            
+            An object containing fields of an arbitrary type. An additional field "@type" contains a URI identifying the type. Example: { "id": 1234, "@type": "TakeSnapshotResponse" }.'
           type: object
       type: object
     ExamplePayload:
@@ -1845,7 +1923,8 @@ components:
       properties:
         annotationSpecId:
           description: Output only . The resource ID of the annotation spec that this annotation pertains to. The annotation spec comes from either an ancestor dataset, or the dataset that was used to train the model in use.
-          type: string
+          type: integer
+          format: int64
         displayName:
           description: Output only. The value of display_name when the model was trained. Because this field returns a value at model training time, for different models trained using the same dataset, the returned value could be different as model owner could update the `display_name` between any two model training.
           type: string
@@ -1901,52 +1980,64 @@ components:
     namespace:
       name: namespace
       in: path
-      description: The name of the namespace.
+      description: The id of the namespace.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-namespace
+    user:
+      name: user
+      in: path
+      description: The id of the user.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    group:
+      name: group
+      in: path
+      description: The id of the group.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+        example: my-group
     job:
       name: job
       in: path
-      description: The name of the job.
+      description: The id of the job.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-job
     dataset:
       name: dataset
       in: path
-      description: The id of the dataset.
+      description: The resource id of the dataset.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-dataset
     tableSpec:
       name: tableSpec
       in: path
-      description: The id of the tableSpec.
+      description: The resource id of the tableSpec.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-tableSpec
     annotationSpec:
       name: annotationSpec
       in: path
-      description: The id of the annotationSpec.
+      description: The resource id of the annotationSpec.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: my-annotationSpec
     model:
       name: model
       in: path
-      description: The id of the model.
+      description: The resource id of the model.
       required: true
       schema:
         type: string
@@ -1955,16 +2046,15 @@ components:
     version:
       name: version
       in: path
-      description: The id of the version.
+      description: The resource id of the version.
       required: true
       schema:
         type: string
         maxLength: 1024
-        example: v1
     evaluation:
       name: evaluation
       in: path
-      description: The id of the evaluation.
+      description: The resource id of the evaluation.
       required: true
       schema:
         type: string
@@ -1972,7 +2062,7 @@ components:
     slice:
       name: slice
       in: path
-      description: The id of the slice.
+      description: The resource id of the slice.
       required: true
       schema:
         type: string
@@ -1980,7 +2070,15 @@ components:
     endpoint:
       name: endpoint
       in: path
-      description: The id of the endpoint.
+      description: The resource id of the endpoint.
+      required: true
+      schema:
+        type: string
+        maxLength: 1024
+    operation:
+      name: operation
+      in: path
+      description: The resource id of the operation.
       required: true
       schema:
         type: string
@@ -1994,12 +2092,16 @@ components:
       content: {}
     IllegalInput:
       description: Illegal input for operation.
-    GeneralError:
-      description: General Error
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GeneralError'
+    default:
+        description: Unexpected error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  # description: the error schema for JSON HTTP APIs
+                  $ref: '#/components/schemas/Status'
   securitySchemes:
     oauth2:
       type: oauth2
