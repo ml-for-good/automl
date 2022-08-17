@@ -25,7 +25,6 @@ API Link: Todo
 
 获取Deployment：
 
--
 Mysql:[https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy](https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy)
 - Kafka:Todo
 - Redis:Todo
