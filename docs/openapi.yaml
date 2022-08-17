@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: AutoML
   description: | 
@@ -36,25 +36,19 @@ tags:
   externalDocs:
     url: https://jupyterhub.readthedocs.io/en/stable/rbac/roles.html#define-role-target
 - name: User
-  description: Management of user
   externalDocs:
     url: https://github.com/jupyterhub/jupyterhub/blob/main/docs/source/_static/rest-api.yml
 - name: Group
-  description: Management of group
 - name: Dataset
-  description: Management of Dataset
 - name: Model
-  description: Management of model
 - name: TrainingJob
-  description: Management of TrainingJob
 - name: Evaluation
-  description: Management of Evaluation
 - name: BatchPredictionJob
-  description: Management of BatchPredictionJob
 - name: Endpoint
-  description: Management of Endpoint
 - name: Operation
-  description: Management of Operation
+- name: Experiment
+- name: Run
+- name: Datastore
 paths:
   /oauth2/authorize:
     get:
@@ -984,7 +978,7 @@ paths:
     post:
       tags:
       - TrainingJob
-      description: Creates a TrainingJob. When you train a model, several model evaluations are created for it, a summary evaluation, and one evaluation for each annotation.
+      description: Creates a TrainingJob. A created TrainingJob right away will be attempted to be run. When you train a model, several model evaluations are created for it, a summary evaluation, and one evaluation for each annotation.
       operationId: automl.namespaces.trainingJob.create
       requestBody:
         content:
@@ -1224,6 +1218,40 @@ paths:
           $ref: '#/components/responses/default'
       tags:
         - Operation
+  /namespaces/{namespace}/experiments:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    get:
+      tags:
+        - Experiment
+      description: Finds all experiments.
+      operationId: automl.namespaces.experiments.get
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Experiment"
+          description: Successful response
+        default:
+          $ref: '#/components/responses/default'
+  /namespaces/{namespace}/runs:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+    get:
+      tags:
+        - Run
+      description: Finds all runs. An experiment will typically contain multiple runs. A run can have zero or more child runs.
+      operationId: automl.namespaces.runs.get
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Run"
+          description: Successful response
+        default:
+          $ref: '#/components/responses/default'
 components:
   schemas:
     ID:
@@ -1252,7 +1280,7 @@ components:
         description:
           description: The description of the namespace.
           type: string
-    JobState:
+    State:
       enum:
         - UNSPECIFIED
         - QUEUED
@@ -1296,10 +1324,9 @@ components:
           type: string
           description: Output only. Time when the Job was most recently updated.
         state:
-          $ref: '#/components/schemas/JobState'
-        errorMessage:
-          description: Output only. The details of a failure or a cancellation.
-          type: string
+          $ref: '#/components/schemas/State'
+        error:
+          $ref: '#/components/schemas/Status'
         jobPosition:
           type: integer
           format: int64
@@ -1330,10 +1357,9 @@ components:
           type: string
           description: Output only. Time when the Job was most recently updated.
         state:
-          $ref: '#/components/schemas/JobState'
-        errorMessage:
-          description: Output only. The details of a failure or a cancellation.
-          type: string
+          $ref: '#/components/schemas/State'
+        error:
+          $ref: '#/components/schemas/Status'
         jobPosition:
           type: integer
           format: int64
@@ -1751,6 +1777,8 @@ components:
             - DEPLOYED
             - UNDEPLOYED
           type: string
+        experimentId:
+          $ref: "#/components/schemas/ID"
         modelMetadata:
           $ref: '#/components/schemas/ModelMetadata'
     Version:
@@ -1771,9 +1799,8 @@ components:
         updateTime:
           description: Output only. Timestamp when this Model was most recently updated.
           type: string
-        errorMessage:
-          description: Output only. The details of a failure or a cancellation.
-          type: string
+        error:
+          $ref: '#/components/schemas/Status'
         state:
           enum:
             - Draft
@@ -1785,17 +1812,20 @@ components:
              * `Draft` - The version state is unspecified.
              * `Ready` - The version is ready for prediction.
              * `Training` - The version is being trained. New versions.patch and versions.delete requests will fail if a version is in the Training state.
-             * `Failed` - errorMessage should contain the details of the failure.
+             * `Failed` - error should contain the details of the failure.
         modelMetadata:
           $ref: '#/components/schemas/ModelMetadata'
-    EvaluationMetrics:
+    Metrics:
       description: Evaluation metrics of the Model. 
       oneOf:
         - $ref: '#/components/schemas/ClassificationEvaluationMetrics'
         - $ref: '#/components/schemas/RegressionEvaluationMetrics'
+        - $ref: '#/components/schemas/ForecastingEvaluationMetrics'
     ClassificationEvaluationMetrics:
       type: object
     RegressionEvaluationMetrics:
+      type: object
+    ForecastingEvaluationMetrics:
       type: object
     ModelExplanation:
       type: object
@@ -1833,7 +1863,7 @@ components:
             type: string
             example: AnnotationSpec
         metrics:
-          $ref: '#/components/schemas/EvaluationMetrics'
+          $ref: '#/components/schemas/Metrics'
         modelExplanation:
           $ref: '#/components/schemas/ModelExplanation'
     EvaluationSlice:
@@ -1855,6 +1885,8 @@ components:
     Endpoint:
       type: object
       properties:
+        id:
+          $ref: "#/components/schemas/ID"
         modelId:
           # description: The id of the Model resoure that produces the predictions via this job
           $ref: "#/components/schemas/ID"
@@ -1863,6 +1895,14 @@ components:
           $ref: "#/components/schemas/ID"
         dedicatedResources:
           $ref: "#/components/schemas/DedicatedResources"
+        createTime:
+          format: datetime
+          type: string
+          description: Output only.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. 
     Status:
       description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
       properties:
@@ -1953,6 +1993,57 @@ components:
             $ref: "#/components/schemas/AnnotationPayload"
           type: array
       type: object
+    Experiment:
+      type: object
+      description: An experiment is a grouping of many runs
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        name:
+          description: Unique experiment name provided by user.
+          type: string
+        description:
+          type: string
+        createTime:
+          format: datetime
+          type: string
+          description: Output only.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only. 
+    Run:
+      type: object
+      description: A run is a single execution. The model trained in the child run with the best score will be selected as the AutoML model
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        name:
+          description: Name provided by user, or auto generated if run is created by scheduled job. Not unique.
+          type: string
+        description:
+          type: string
+        createTime:
+          format: datetime
+          type: string
+          description: Output only.
+        updateTime:
+          format: datetime
+          type: string
+          description: Output only.
+        modelMetadata:
+          $ref: '#/components/schemas/ModelMetadata'
+        experimentId:
+          $ref: "#/components/schemas/ID"
+        state:
+          $ref: '#/components/schemas/State'
+        error:
+          $ref: '#/components/schemas/Status'
+        metrics:
+          $ref: '#/components/schemas/Metrics'
+        parentId:
+          # description: Optional. Runs can have an optional parent
+          $ref: "#/components/schemas/ID"
   parameters:
     access_token:
       description: OAuth access token.
