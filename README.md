@@ -12,16 +12,16 @@ API Link: Todo
 
 ## Quick Start
 
-## How kubernetes deploys AutoML
+### How kubernetes deploys AutoML
 
 需要开放以下端口：Todo
 
-## Step 1: 部署依赖环境
+#### Step 1: 部署依赖环境
 
 - Minikube
 - Docker
 
-## Step 2: 部署依赖服务
+#### Step 2: 部署依赖服务
 
 获取Deployment：
 
@@ -30,7 +30,7 @@ API Link: Todo
 - Redis:Todo
 - Minio:[https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml](https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml)
 - …
-## Step 3: 部署AutoML
+#### Step 3: 部署AutoML
 
 获取Deployment：
 
