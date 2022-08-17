@@ -1,3 +1,5 @@
+
+
 # AutoML
 
 We're designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and
@@ -10,37 +12,86 @@ no AI coding skills to optimize day-to-day operations and to solve business issu
 
 API Link: Todo
 
-## Quick Start
+## How Minikube deploys AutoML
 
-### How kubernetes deploys AutoML
+按照一下指南在您本地Minikube上部署AutoML.
 
-需要开放以下端口：Todo
+### Prerequisites
 
-#### Step 1: 部署依赖环境
+开始之前,请确保一下组件安装在你的机器上:
 
-- Minikube
 - Docker
+- Minikube
 
-#### Step 2: 部署依赖服务
+安装教程:
 
-获取Deployment：
+**Mac OS:**
 
-- Mysql:[https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy](https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy)
-- Kafka:Todo
-- Redis:Todo
-- Minio:[https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml](https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml)
-- …
-#### Step 3: 部署AutoML
+- Docker: https://docs.docker.com/desktop/install/mac-install/
 
-获取Deployment：
+- Minikube: ``brew install minikube``
+  - 详细参考:https://minikube.sigs.k8s.io/docs/start/
 
-- AutoML:[https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml)
+**Linux:** Todo
 
-部署命令：
+**Windows:** Todo
+
+#### Step 1: 部署依赖服务
+
+**MySQL部署**
+
+创建MySql的**namespace**:
+
+```
+kubectl create ns mysql
+```
+
+获取Deployment：[mysql-deployment.yaml](https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy)
+
+部署MySQL：
+
+```
+kubectl apply -f mysql-deployment.yaml
+```
+
+**Minio部署**
+
+创建Minio的**namespace**:
+
+```bash
+kubectl create ns minio
+```
+
+获取Deployment：[minio-deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml)
+
+部署Minio：
+
+```bash
+kubectl apply -f minio-deployment.yaml
+```
+
+**Kafka部署**
+
+**Redis部署**
+
+...
+
+#### Step 2: 部署AutoML平台:
+
+创建AutoML的**namespace:**
+
+```
+kubectl create ns automl
+```
+
+获取Deployment：[automl-deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml)
+
+部署AutoML：
 
 ```bash
 kubectl apply -f automl-deployment.yaml
 ```
 
 ## License
+
 Todo
