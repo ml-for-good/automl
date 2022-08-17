@@ -10,33 +10,31 @@ no AI coding skills to optimize day-to-day operations and to solve business issu
 
 API Link: Todo
 
-## Quick Start：
+## Quick Start
 
 ## How kubernetes deploys AutoML
 
-部署之前需要开发一下端口：Todo
+需要开放以下端口：Todo
 
 ## Step 1: 部署依赖环境
 
 - Minikube
 - Docker
 
-## Step 2:部署依赖服务:
+## Step 2: 部署依赖服务
 
 获取Deployment：
 
-Mysql:[https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy](https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy)
+- Mysql:[https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy](https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy)
 - Kafka:Todo
 - Redis:Todo
--
-Minio:[https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml](https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml)
-- ….
-
-## Step 3:部署AutoML
+- Minio:[https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml](https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml)
+- …
+## Step 3: 部署AutoML
 
 获取Deployment：
 
-AutoML:[https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml)
+- AutoML:[https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml)
 
 部署命令：
 
@@ -45,3 +43,4 @@ kubectl apply -f automl-deployment.yaml
 ```
 
 ## License
+Todo
