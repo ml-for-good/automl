@@ -1747,8 +1747,28 @@ components:
               format: float
               type: number
               description: The fraction of the input data that is to be used to evaluate the Model.
-        targetColumnSpec:
-          $ref: '#/components/schemas/ColumnSpec'
+        targetColumn:
+          type: string
+          description: The name of the column to train as the label.
+        weightColumn:
+          type: string
+          description: (Optional) The name of the weight column.
+        predictionType:
+          enum: 
+            - CLASSIFICATION
+            - REGRESSION
+            - FORECASTING
+          type: string
+        trainBudgetMilliNodeHours:
+          type: number
+          format: int32
+          description: "The maximum amount of time you want the model to train, in milli node hours (1,000 milli node hours equals one node hour)."
+        transformations:
+          type: array
+          example: '[{"auto": {"column_name": column_name},...]'
+          items:
+            type: object
+              
     Model:
       type: object
       description: Represents a machine learning solution.
