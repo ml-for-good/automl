@@ -43,8 +43,6 @@ AutoML的部署脚本维护在``./deploy``目录下.
 ```bash
 #后续有需要再加
 kubectl create ns mysql
-kubectl create ns automl
-kubectl create ns minio
 ```
 
 在``automl``目录下执行命令:
@@ -56,9 +54,8 @@ kubectl apply -f deploy
 查看pod,svc,deployment信息:
 
 ```bash
-kubectl get pod,svc,deployment -n <namespace>
+kubectl get pod,svc,deployment -n mysql
 ```
-
 ## License
 
 Todo
