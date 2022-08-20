@@ -1695,10 +1695,58 @@ components:
           type: string
           description: Output only. Timestamp when AnnotationSpec was last updated.
       type: object
+    FractionSplit:
+      type: object
+      description: The fractionSplit object is not supported for forecasting models.
+      properties:
+        trainingFraction:
+          format: float
+          type: number
+          description: The fraction of the input data that is to be used to train the Model.
+        validationFraction:
+          format: float
+          type: number
+          description: The fraction of the input data that is to be used to validate the Model.
+        testFraction:
+          format: float
+          type: number
+          description: The fraction of the input data that is to be used to evaluate the Model
+    PredefinedSplit:
+      type: object
+      description: Optional. The column containing the data split values (TRAIN, VALIDATION, TEST). The predefinedSplit object is not supported for forecasting models.
+      properties:
+        key:
+          type: string
+          description: Required. The key is a name of one of the Dataset's data columns. The value of the key (either the label's value or value in the column) must be one of {training, validation, test}, and it defines to which set the given piece of data is assigned. If for a piece of data the key is not present or has an invalid value, that piece is ignored by the pipeline.
+          enum:
+            - TRAIN
+            - VALIDATION
+            - TEST
+    TimestampSplit:
+      type: object
+      description: The fractionSplit object is not supported for forecasting models. The youngest data pieces are assigned to training set, next to validation set, and the oldest to the test set.
+      properties:
+        trainingFraction:
+          format: float
+          type: number
+          description: The fraction of the input data that is to be used to train the Model.
+        validationFraction:
+          format: float
+          type: number
+          description: The fraction of the input data that is to be used to validate the Model.
+        testFraction:
+          format: float
+          type: number
+          description: The fraction of the input data that is to be used to evaluate the Model.
+        key:
+          type: string
+          description: Required. The key is a name of one of the Dataset's data columns. The values of the key (the values in the column) must be in  date-time format. If for a piece of data the key is not present or has an invalid value, that piece is ignored by the pipeline.
     ModelMetadata:
       description: Union field model_metadata. The model metadata that is specific to the problem type. Must match the metadata type of the dataset used to train the model. model_metadata can be only one of the following
       oneOf:
-        - $ref: '#/components/schemas/TabularModelMetadata'
+        - $ref: '#/components/schemas/RegressionModelMetadata'
+        - $ref: '#/components/schemas/ClassficationModelMetadata'
+        - $ref: '#/components/schemas/ForecastingModelMetadata'
     TabularModelMetadata:
       type: object
       description: Metadata for Tabular models, metadata is used to train the model. When you train an AutoML model using a tabular dataset, the platform selects a default optimization objective based on your model type and the data type used for your target column.
@@ -1721,32 +1769,12 @@ components:
         disableEarlyStopping:
           description: This disables the early stopping feature. By default, the early stopping feature is enabled, which means ends model training when detects that no more improvents can be made.
           type: boolean
-        optimizationObjective:
-          description: 'Objective function the model is optimizing towards. The training process creates a model that maximizes/minimizes the value of the objective function over the validation set. The supported optimization objectives depend on the prediction type. If the field is not set, a default objective function is used. CLASSIFICATION_BINARY: "MAXIMIZE_AU_ROC" (default) - Maximize the area under the receiver operating characteristic (ROC) curve. "MINIMIZE_LOG_LOSS" - Minimize log loss. "MAXIMIZE_AU_PRC" - Maximize the area under the precision-recall curve. "MAXIMIZE_PRECISION_AT_RECALL" - Maximize precision for a specified recall value. "MAXIMIZE_RECALL_AT_PRECISION" - Maximize recall for a specified precision value. CLASSIFICATION_MULTI_CLASS : "MINIMIZE_LOG_LOSS" (default) - Minimize log loss. REGRESSION: "MINIMIZE_RMSE" (default) - Minimize root-mean-squared error (RMSE). "MINIMIZE_MAE" - Minimize mean-absolute error (MAE). "MINIMIZE_RMSLE" - Minimize root-mean-squared log error (RMSLE).'
-          type: string
-        optimizationObjectivePrecisionValue:
-          description: Required when optimization_objective is "MAXIMIZE_RECALL_AT_PRECISION". Must be between 0 and 1, inclusive.
-          format: float
-          type: number
-        optimizationObjectiveRecallValue:
-          description: Required when optimization_objective is "MAXIMIZE_PRECISION_AT_RECALL". Must be between 0 and 1, inclusive.
-          format: float
-          type: number
-        fractionSplit:
-          type: object
-          properties:
-            trainingFraction:
-              format: float
-              type: number
-              description: The fraction of the input data that is to be used to train the Model.
-            validationFraction:
-              format: float
-              type: number
-              description: The fraction of the input data that is to be used to validate the Model.
-            testFraction:
-              format: float
-              type: number
-              description: The fraction of the input data that is to be used to evaluate the Model.
+        split:
+          description: Union field split. The instructions how the input data should be split between the training, validation and test sets. split can be only one of the following
+          oneOf:
+            - $ref: '#/components/schemas/FractionSplit'
+            - $ref: '#/components/schemas/PredefinedSplit'
+            - $ref: '#/components/schemas/TimestampSplit'
         targetColumn:
           type: string
           description: The name of the column to train as the label.
@@ -1755,9 +1783,9 @@ components:
           description: (Optional) The name of the weight column.
         predictionType:
           enum: 
-            - CLASSIFICATION
-            - REGRESSION
-            - FORECASTING
+            - classification
+            - regression
+            - forecasting
           type: string
         trainBudgetMilliNodeHours:
           type: number
@@ -1768,6 +1796,145 @@ components:
           example: '[{"auto": {"column_name": column_name},...]'
           items:
             type: object
+    RegressionModelMetadata:
+      allOf:
+        - $ref: "#/components/schemas/TabularModelMetadata"
+        - type: object
+          properties:
+            optimizationObjective:
+              type: string
+              enum:
+                - minimize-rmse
+                - minimize-mae
+                - minimize-rmsle
+              description: | 
+                When you train a model, Platform selects a default optimization objective based on your model type and the data type used for your target column.
+                * `minimize-rmse` RMSE - Minimize root-mean-squared error (RMSE). Captures more extreme values accurately. Default value.
+                * `minimize-mae` MAE - Minimize mean-absolute error (MAE). Views extreme values as outliers with less impact on model.
+                * `minimize-rmsle` RMSLE - Minimize root-mean-squared log error (RMSLE). Penalizes error on relative size rather than absolute value. Useful when both predicted and actual values can be quite large.
+    ClassficationModelMetadata:
+      allOf:
+        - $ref: "#/components/schemas/TabularModelMetadata"
+        - type: object
+          properties:
+            optimizationObjective:
+              type: string
+              enum:
+                - maximize-au-roc
+                - minimize-log-loss
+                - maximize-au-prc
+                - maximize-precision-at-recall
+                - maximize-recall-at-precision
+              description: | 
+                When you train a model, Platform selects a default optimization objective based on your model type and the data type used for your target column.
+                * `maximize-au-roc` AUC ROC - Maximize the area under the receiver operating characteristic (ROC) curve. Distinguishes between classes. Default value for binary classification.
+                * `minimize-log-loss` Log loss - Keep prediction probabilities as accurate as possible. Only supported objective for multi-class classification.
+                * `maximize-au-prc` AUC PR - 	Maximize the area under the precision-recall curve. Optimizes results for predictions for the less common class.
+                * `maximize-precision-at-recall` Precision at Recall - Optimize precision at a specific recall value.
+                * `maximize-recall-at-precision` Recall at Precision - Optimize recall at a specific precision value.
+            optimizationObjectivePrecisionValue:
+              description: Required when optimizationObjective is "maximize-recall-at-precision". Must be between 0 and 1, inclusive.
+              format: float
+              type: number
+            optimizationObjectiveRecallValue:
+              description: Required when optimizationObjective is "maximize-precision-at-recall". Must be between 0 and 1, inclusive.
+              format: float
+              type: number
+    ForecastingModelMetadata:
+      allOf:
+        - $ref: "#/components/schemas/TabularModelMetadata"
+        - type: object
+          properties:
+            timeColumn:
+              description: You must specify a time column and it must have a value for every row. The time column is used to place the observation represented by that row in time.
+              type: string
+            timeSeriesIdentifierColumn:
+              type: string
+              description: One of your columns in your training data for a forecasting model must be specified as the time series identifier. Forecasting training data usually includes multiple time series, and the identifier tells Platform which time series a given observation in the training data is part of. All of the rows in a given time series have the same value in the time series identifier column.Some common time series identifiers might be the product ID, a store ID, or a region. When you have multiple time series in your training data, there should be a specific column that differentiates them.
+            dataGranularity:
+              type: object
+              properties:
+                unit:
+                  type: string
+                  description: The unit to use for the granularity of your training data and your forecast horizon and context window. Can be minute, hour, day, week, month, or year. Select day if you would like to use holiday effect modeling.
+                  enum:
+                    - minute
+                    - hour
+                    - day 
+                    - week
+                    - month
+                    - year
+                quantity:
+                  type: number
+                  format: int32
+                  description: The number of granularity units that make up the interval between observations in your training data. Must be one for all units except minutes, which can be 1, 5, 10, 15, or 30.
+            hierarchyConfig:
+              type: object
+              description: https://cloud.google.com/vertex-ai/docs/tabular-data/forecasting/hierarchical
+              properties:
+                groupColumns:
+                  type: array
+                  items:
+                    type: string
+                    description: Column names in your training input table that identify the grouping for the hierarchy level. The column(s) must be `time_series_attribute_columns`.
+                groupTotalWeight:
+                  type: number
+                  format: int32
+                  description: Weight of the group aggregated loss relative to the individual loss. Disabled if set to `0.0` or is not set. If the group column is not set, all time series will be treated as part of the same group and is aggregated over all time series. 
+                temporalTotalWeight:
+                  type: number
+                  format: int32
+                  description: Weight of the time aggregated loss relative to the individual loss. Disabled if set to `0.0` or is not set.
+                groupTemporalTotalWeight:
+                  type: number
+                  format: int32
+                  description: Weight of the total (group x time) aggregated loss relative to the individual loss. Disabled if set to `0.0` or is not set. If the group column is not set, all time series will be treated as part of the same group and is aggregated over all time series.
+            holidayRegions:
+              type: array
+              description:  (Optional) One or more geographical regions based on which the holiday effect is applied in modeling. During training, Vertex AI creates holiday categorical features within the model based on the date from the time column and the specified geographical regions. To enable it, set dataGranularity.unit to day and specify one or more regions in the holidayRegions field. By default, holiday effect modeling is disabled.
+              items:
+                type: string
+                description: "https://cloud.google.com/bigquery-ml/docs/reference/standard-sql/bigqueryml-syntax-create-time-series#holiday_region"
+            forecastHorizon:
+              type: number
+              format: int32
+              description: The size of the forecast horizon, specified in granularity units. The forecast horizon is the period of time the model should forecast results for.
+            contextWindow:
+              type: number
+              format: int32
+              description: The number of granularity units the model should look backward to include at training time. 
+            timeSeriesAttributeColumns:
+              type: array
+              description: The name or names of the columns that are time series attributes. 
+              items:
+                type: string
+            availableAtForecastColumns:
+              type: array
+              description: The name or names of the covariate columns whose value is known at forecast time. 
+              items:
+                type: string
+            unavailableAtForecastColumns:
+              type: array
+              description: The name or names of the covariate columns whose value is unknown at forecast time.
+              items:
+                type: string
+            optimizationObjective:
+              type: string
+              enum:
+                - minimize-rmse
+                - minimize-mae
+                - minimize-rmsle
+                - minimize-rmspe
+                - minimize-wape-mae
+                - minimize-quantile-loss
+              description: | 
+                When you train a model, Platform selects a default optimization objective based on your model type and the data type used for your target column.
+                * `minimize-rmse` RMSE - Minimize root-mean-squared error (RMSE). Captures more extreme values accurately and is less biased when aggregating predictions. Default value.
+                * `minimize-mae` MAE - Minimize mean-absolute error (MAE). Views extreme values as outliers with less impact on model.
+                * `minimize-rmsle` RMSLE - 	Minimize root-mean-squared log error (RMSLE). Penalizes error on relative size rather than absolute value. Useful when both predicted and actual values can be quite large.
+                * `minimize-rmspe` RMSPE - Minimize root-mean-squared percentage error (RMSPE). Captures a large range of values accurately. Similar to RMSE, but relative to target magnitude. Useful when the range of values is large.
+                * `minimize-wape-mae` WAPE - Minimize the combination of weighted absolute percentage error (WAPE) and mean-absolute-error (MAE). Useful when the actual values are low.
+                * `minimize-quantile-loss` Quantile loss - Minimize the scaled pinball loss of the defined quantiles to quantify uncertainty in estimates.
               
     Model:
       type: object
