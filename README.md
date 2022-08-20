@@ -65,8 +65,6 @@ AutoML的部署脚本维护在``./deploy``目录下.
 kubectl create ns mysql
 ```
 
-获取Deployment：[mysql-deployment.yaml](https://github.com/ml-for-good/automl/tree/main/Investigation/mysql/deploy)
-
 部署MySQL：
 
 ```
