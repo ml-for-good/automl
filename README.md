@@ -1,5 +1,3 @@
-
-
 # AutoML
 
 We're designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and
@@ -14,7 +12,8 @@ API Link: Todo
 
 ## How Minikube deploys AutoML
 
-按照一下指南在您本地Minikube上部署AutoML.
+AutoML的部署脚本维护在``./deploy``目录下.
+按照以下指南在你本地Minikube上部署AutoML平台.
 
 ### Prerequisites
 
@@ -40,7 +39,27 @@ API Link: Todo
 
 **MySQL部署**
 
-创建MySql的**namespace**:
+获取MySQL部署文件:
+
+- 获取mysql-pv.yaml：
+
+  ```bash
+  curl -O https://github.com/ml-for-good/automl/tree/main/deploy/mysql-pv.yaml
+  ```
+
+- 获取mysql-pvc.yaml:
+
+  ```bash
+  curl -O https://github.com/ml-for-good/automl/tree/main/deploy/mysql-pvc.yaml
+  ```
+
+- 获取mysql-deployment.yaml:
+
+  ```bash
+  curl -O https://github.com/ml-for-good/automl/tree/main/deploy/mysql-deployment.yaml
+  ```
+
+创建MySQL的**namespace**:
 
 ```
 kubectl create ns mysql
@@ -51,18 +70,27 @@ kubectl create ns mysql
 部署MySQL：
 
 ```
+# No.1
+kubectl apply -f mysql-pv.yaml
+# No.2
+kubectl apply -f mysql-pvc.yaml
+# No.3
 kubectl apply -f mysql-deployment.yaml
 ```
 
 **Minio部署**
+
+获取Minio部署文件:
+
+```bash
+curl -O https://github.com/ml-for-good/automl/tree/main/deploy/minio-deployment.yaml
+```
 
 创建Minio的**namespace**:
 
 ```bash
 kubectl create ns minio
 ```
-
-获取Deployment：[minio-deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/minio/deploy.yml)
 
 部署Minio：
 
@@ -72,19 +100,27 @@ kubectl apply -f minio-deployment.yaml
 
 **Kafka部署**
 
+Todo
+
 **Redis部署**
+
+Todo
 
 ...
 
 #### Step 2: 部署AutoML平台:
+
+获取AutoML部署文件：
+
+```
+curl -O https://github.com/ml-for-good/automl/tree/main/deploy/automl-deployment.yaml
+```
 
 创建AutoML的**namespace:**
 
 ```
 kubectl create ns automl
 ```
-
-获取Deployment：[automl-deployment.yaml](https://github.com/ml-for-good/automl/blob/main/Investigation/java/deploy/deployment.yaml)
 
 部署AutoML：
 
