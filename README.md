@@ -35,29 +35,15 @@ AutoML的部署脚本维护在``./deploy``目录下.
 
 **Windows:** Todo
 
+### Start Deploy
+
+再开始部署前,确保部署文件为最新!!!
+
+在``automl/deploy``目录下开始执行部署
+
 #### Step 1: 部署依赖服务
 
 **MySQL部署**
-
-获取MySQL部署文件:
-
-- 获取mysql-pv.yaml：
-
-  ```bash
-  curl -O https://github.com/ml-for-good/automl/tree/main/deploy/mysql-pv.yaml
-  ```
-
-- 获取mysql-pvc.yaml:
-
-  ```bash
-  curl -O https://github.com/ml-for-good/automl/tree/main/deploy/mysql-pvc.yaml
-  ```
-
-- 获取mysql-deployment.yaml:
-
-  ```bash
-  curl -O https://github.com/ml-for-good/automl/tree/main/deploy/mysql-deployment.yaml
-  ```
 
 创建MySQL的**namespace**:
 
@@ -77,12 +63,6 @@ kubectl apply -f mysql-deployment.yaml
 ```
 
 **Minio部署**
-
-获取Minio部署文件:
-
-```bash
-curl -O https://github.com/ml-for-good/automl/tree/main/deploy/minio-deployment.yaml
-```
 
 创建Minio的**namespace**:
 
@@ -107,12 +87,6 @@ Todo
 ...
 
 #### Step 2: 部署AutoML平台:
-
-获取AutoML部署文件：
-
-```
-curl -O https://github.com/ml-for-good/automl/tree/main/deploy/automl-deployment.yaml
-```
 
 创建AutoML的**namespace:**
 
