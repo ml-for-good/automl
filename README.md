@@ -37,67 +37,26 @@ AutoML的部署脚本维护在``./deploy``目录下.
 
 ### Start Deploy
 
-再开始部署前,确保部署文件为最新!!!
-
-在``automl/deploy``目录下开始执行部署
-
-#### Step 1: 部署依赖服务
-
-**MySQL部署**
-
-创建MySQL的**namespace**:
-
-```
-kubectl create ns mysql
-```
-
-部署MySQL：
-
-```
-# No.1
-kubectl apply -f mysql-pv.yaml
-# No.2
-kubectl apply -f mysql-pvc.yaml
-# No.3
-kubectl apply -f mysql-deployment.yaml
-```
-
-**Minio部署**
-
-创建Minio的**namespace**:
+开始部署前,确保获取到最新部署文件!!!
+创建需要的**namespace**
 
 ```bash
+#后续有需要再加
+kubectl create ns mysql
+kubectl create ns automl
 kubectl create ns minio
 ```
 
-部署Minio：
+在``automl``目录下执行命令:
 
 ```bash
-kubectl apply -f minio-deployment.yaml
+kubectl apply -f deploy
 ```
 
-**Kafka部署**
-
-Todo
-
-**Redis部署**
-
-Todo
-
-...
-
-#### Step 2: 部署AutoML平台:
-
-创建AutoML的**namespace:**
-
-```
-kubectl create ns automl
-```
-
-部署AutoML：
+查看pod,svc,deployment信息:
 
 ```bash
-kubectl apply -f automl-deployment.yaml
+kubectl get pod,svc,deployment -n <namespace>
 ```
 
 ## License
