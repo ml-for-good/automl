@@ -6,6 +6,8 @@
 
 > 本地DB中运行 sql/automl.sql 即可.
 
+<b> 注意: 先用automl-test.sql执行, 上线之后我们再使用automl.sql @ALL </b>
+
 ## 关系图
 ![关系图-idea](https://img-blog.csdnimg.cn/2f92476c2e4f4bdbacaa93130af3a989.png)
 
