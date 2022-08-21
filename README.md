@@ -62,7 +62,7 @@ kubectl get pod,svc,deployment,pv,pvc -n mysql
 获取 minikube的 `IP` 和service的`NodePort`
 
 ```bash
-minikube service mysql --url
+minikube service mysql -n mysql --url
 ```
 
 使用本地Navicat客户端连接数据库,连接信息:
