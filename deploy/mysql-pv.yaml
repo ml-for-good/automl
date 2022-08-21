@@ -7,20 +7,21 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 20Gi
+    storage: 1Gi
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce # 只能被一个容器访问，如果能被多个容器访问那么设置为ReadWriteMany
   hostPath:
-    path: "/mnt/data"
+    path: "/var/lib/mysql"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pv-claim
+  namespace: mysql
 spec:
   storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 1Gi

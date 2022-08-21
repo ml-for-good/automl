@@ -1,18 +1,30 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: mysql
+  namespace: mysql
 spec:
-  ports:
-    - port: 3306
   selector:
     app: mysql
-  clusterIP: None
+  type: NodePort
+  ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
+      nodePort: 31234        # k8s暴露的mysql端口
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
+  namespace: mysql
 spec:
   selector:
     matchLabels:
@@ -30,7 +42,7 @@ spec:
           env:
             # 在实际中使用 secret
             - name: MYSQL_ROOT_PASSWORD
-              value: password
+              value: root
           ports:
             - containerPort: 3306
               name: mysql

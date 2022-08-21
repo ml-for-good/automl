@@ -37,11 +37,18 @@ AutoML的部署脚本维护在``./deploy``目录下.
 
 ### Start Deploy
 
-开始部署前,确保获取到最新部署文件!!!
+开始部署前,确保启动minikube和获取最新部署文件!!!
+
+启动Minikube: https://minikube.sigs.k8s.io/docs/drivers/docker/
+
+```bash
+minikube start --driver=docker #使用 docker 驱动启动集群
+```
+
+
 创建需要的**namespace**
 
 ```bash
-#后续有需要再加
 kubectl create ns mysql
 ```
 
@@ -54,8 +61,27 @@ kubectl apply -f deploy
 查看pod,svc,deployment信息:
 
 ```bash
-kubectl get pod,svc,deployment -n mysql
+kubectl get pod,svc,deployment,pv,pvc -n mysql
 ```
+
+### 测试连接:
+
+获取 minikube的 `IP` 和service的`NodePort`
+
+```bash
+minikube service mysql --url
+```
+
+使用本地Navicat客户端连接数据库,连接信息:
+
+``Host:IP``
+
+``port:NodePort``
+
+``用户名:root``
+
+``密码:root``
+
 ## License
 
 Todo
