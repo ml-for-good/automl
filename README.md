@@ -45,13 +45,6 @@ AutoML的部署脚本维护在``./deploy``目录下.
 minikube start --driver=docker #使用 docker 驱动启动集群
 ```
 
-
-创建需要的**namespace**
-
-```bash
-kubectl create ns mysql
-```
-
 在``automl``目录下执行命令:
 
 ```bash
@@ -64,7 +57,7 @@ kubectl apply -f deploy
 kubectl get pod,svc,deployment,pv,pvc -n mysql
 ```
 
-### 测试连接:
+### 测试连接
 
 获取 minikube的 `IP` 和service的`NodePort`
 
