@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.0.2
 info:
   title: AutoML
   description: | 
@@ -1045,7 +1045,7 @@ paths:
     get:
       tags:
         - Evaluation
-      description: Lists ModelEvaluationSlices in a ModelEvaluation.
+      description: Lists ModelEvaluationSlices in a ModelEvaluation. Tabular forecasting models do not have evaluation metric slices. Tabular regression models do not have evaluation metric slices.
       operationId: automl.projects.locations.models.version.evaluations.slices.list
       responses:
         "200":
@@ -1258,6 +1258,11 @@ components:
       type: integer
       format: int64
       description: the unique identifier of that resource
+    DateTime:
+      type: string
+      format: date-time
+      description: Output only.
+      example: "2021-04-13T01:00:54.091953Z"
     Namespace:
       type: object
       properties:
@@ -1267,13 +1272,9 @@ components:
           description: The name of the namespace.
           type: string
         createTime:
-          description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was created.
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          description: An [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp representing the date/time the namespace was updated.
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/DateTime"
         ownerId:
           description: The owner of the namespace.
           $ref: "#/components/schemas/ID"
@@ -1308,21 +1309,15 @@ components:
         jobId:
           $ref: "#/components/schemas/ID"
         createTime:
-          format: datetime
-          type: string
-          description: Output only. Time when the Job was created.
+          $ref: "#/components/schemas/DateTime"
         startTime:
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
           description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
         endTime:
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
           description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
         updateTime:
-          format: datetime
-          type: string
-          description: Output only. Time when the Job was most recently updated.
+          $ref: "#/components/schemas/DateTime"
         state:
           $ref: '#/components/schemas/State'
         error:
@@ -1341,21 +1336,15 @@ components:
         jobId:
           $ref: "#/components/schemas/ID"
         createTime:
-          format: datetime
-          type: string
-          description: Output only. Time when the Job was created.
+          $ref: "#/components/schemas/DateTime"
         startTime:
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
           description: Output only. Time when the Job for the first time entered the JOB_STATE_RUNNING state.
         endTime:
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
           description: Output only. Time when the Job entered any of the following states - SUCCEEDED, FAILED, CANCELLED.
         updateTime:
-          format: datetime
-          type: string
-          description: Output only. Time when the Job was most recently updated.
+          $ref: "#/components/schemas/DateTime"
         state:
           $ref: '#/components/schemas/State'
         error:
@@ -1627,9 +1616,7 @@ components:
         id:
           $ref: "#/components/schemas/ID"
         createTime:
-          description: Output only. Timestamp when this dataset was created.
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
         description:
           description: User-provided description of the dataset. The description can be up to 25000 characters long.
           type: string
@@ -1687,13 +1674,9 @@ components:
         id:
           $ref: "#/components/schemas/ID"
         createTime:
-          format: datetime
-          type: string
-          description: Output only. Timestamp when this AnnotationSpec was created.
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          format: datetime
-          type: string
-          description: Output only. Timestamp when AnnotationSpec was last updated.
+          $ref: "#/components/schemas/DateTime"
       type: object
     FractionSplit:
       type: object
@@ -1952,11 +1935,9 @@ components:
           type: string
           description: Output only. The default version of the model. This version will be used to handle prediction requests that do not specify a version.
         createTime:
-          description: Output only. Timestamp when this model was created.
-          type: string
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          description: Output only. Timestamp when this Model was most recently updated.
-          type: string
+          $ref: "#/components/schemas/DateTime"
         deploymentState:
           description: Output only. Deployment state of the model. A model can only serve prediction requests after it gets deployed.
           enum:
@@ -1981,11 +1962,9 @@ components:
           type: string
           description: Optional. The description specified for the model when it was created.
         createTime:
-          description: Output only. Timestamp when this model was created.
-          type: string
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          description: Output only. Timestamp when this Model was most recently updated.
-          type: string
+          $ref: "#/components/schemas/DateTime"
         error:
           $ref: '#/components/schemas/Status'
         state:
@@ -2002,18 +1981,48 @@ components:
              * `Failed` - error should contain the details of the failure.
         modelMetadata:
           $ref: '#/components/schemas/ModelMetadata'
-    Metrics:
-      description: Evaluation metrics of the Model. 
-      oneOf:
-        - $ref: '#/components/schemas/ClassificationEvaluationMetrics'
-        - $ref: '#/components/schemas/RegressionEvaluationMetrics'
-        - $ref: '#/components/schemas/ForecastingEvaluationMetrics'
-    ClassificationEvaluationMetrics:
+    ConfusionMatrix:
       type: object
-    RegressionEvaluationMetrics:
-      type: object
-    ForecastingEvaluationMetrics:
-      type: object
+      description: >
+        OPTIONAL. Confusion matrix of the evaluation for this confidenceThreshold. A confusion matrix shows how often a model correctly predicted a result. For incorrectly predicted results, the matrix shows what the model predicted instead. The confusion matrix helps you understand where your model is "confusing" two results.
+      properties:
+        annotationSpecs:
+          type: array
+          description: >
+            AnnotationSpecs used in the confusion matrix.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: >
+                  OPTIONAL. ID of the AnnotationSpec.
+              displayName:
+                type: string
+                description: >
+                  Display name of the AnnotationSpec.
+          example: 
+            - displayName: '1'
+            - displayName: '2'
+        rows:
+          type: array
+          description: >
+            Rows in the confusion matrix. The number of rows is equal to the size of `annotationSpecs`.
+            `row[i][j]` is the number of DataItems that have ground truth of the `annotationSpecs[i]`
+            and are predicted as `annotationSpecs[j]` by the Model being evaluated.
+          items:
+            type: object
+            properties:
+              row:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+          example:
+            - - 3817
+              - 140
+            - - 266
+              - 244
     ModelExplanation:
       type: object
       description: Aggregated explanation metrics for the Model's prediction output over the data this ModelEvaluation uses. This field is populated only if the Model is evaluated with explanations, and only for AutoML tabular Models.
@@ -2027,8 +2036,30 @@ components:
               featureAttributions:
                 type: object
                 description: Attributions of each explained feature. Automl platform shows you how much each feature impacts a model. The values are provided as a percentage for each feature, the higher the percentage, the more strongly that feature impacted model training. Review this information to ensure that all of the most important features make sense for your data and business problem.
-            
+                example:
+                  Age: 0.022972771897912025
+                  Job: 0.03154255077242851
+                  MaritalStatus: 0.015506803058087826
+                  Education: 0.01918913424015045
+                  Default: 0.00021766019926872104
+                  Balance: 0.031217793002724648
+                  Housing: 0.06786702573299408
+                  Loan: 0.007259220816195011
+                  Contact: 0.08356624096632004
+                  Day: 0.07489492744207382
+                  Month: 0.19679982960224152
+                  Duration: 0.35500210523605347
+                  Campaign: 0.03342504799365997
+                  PDays: 0.013902961276471615
+                  Previous: 0.006168586667627096
+                  POutcome: 0.04046733304858208
     Evaluation:
+      description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
+      oneOf:
+        - $ref: '#/components/schemas/RegressionEvaluation'
+        - $ref: '#/components/schemas/ClassficationEvaluation'
+        - $ref: '#/components/schemas/ForecastingEvaluation'
+    TabularEvaluation:
       type: object
       description: A collection of metrics calculated by comparing Model's predictions on all of the test data against annotations from the test data.
       properties:
@@ -2040,19 +2071,275 @@ components:
           enum:
             - Excellent
             - Great
-            - Good, 
+            - Good
             - Okay
             - Poor
-        sliceDimensions:
-          type: array
-          description: Output only. All possible dimensions of ModelEvaluationSlices. 
-          items:
-            type: string
-            example: AnnotationSpec
-        metrics:
-          $ref: '#/components/schemas/Metrics'
-        modelExplanation:
-          $ref: '#/components/schemas/ModelExplanation'
+        createTime:
+          $ref: "#/components/schemas/DateTime"
+    RegressionEvaluation:
+      allOf:
+        - $ref: "#/components/schemas/TabularEvaluation"
+        - type: object
+          properties:
+            modelExplanation:
+              $ref: '#/components/schemas/ModelExplanation'
+            metrics:
+              title: RegressionEvaluationMetrics
+              type: object
+              properties:
+                rootMeanSquaredError:
+                  type: number
+                  format: float
+                  description: >
+                    The root-mean-squared error is the square root of the average squared difference between the target and predicted values. RMSE is more sensitive to outliers than MAE,so if you're concerned about large errors, then RMSE can be a more useful metric to evaluate. Similar to MAE, a smaller value indicates a higher quality model (0 represents a perfect predictor).
+                meanAbsoluteError:
+                  type: number
+                  format: float
+                  description: >
+                    The mean absolute error (MAE) is the average absolute difference between the target values and the predicted values. This metric ranges from zero to infinity; a lower value indicates a higher quality model.
+                meanAbsolutePercentageError:
+                  type: number
+                  format: float
+                  description: >
+                    Mean absolute percentage error (MAPE) is the average absolute percentage difference between the labels and the predicted values. This metric ranges between zero and infinity; a lower value indicates a higher quality model. MAPE is not shown if the target column contains any 0 values. In this case, MAPE is undefined.
+                rSquared:
+                  type: number
+                  format: float
+                  description: >
+                    r squared (r^2) is the square of the Pearson correlation coefficient between the labels and predicted values. This metric ranges between zero and one; a higher value indicates a higher quality model.
+                rootMeanSquaredLogError:
+                  type: number
+                  format: float
+                  description: >
+                    The root-mean-squared logarithmic error metric is similar to RMSE, except that it uses the natural logarithm of the predicted and actual values plus 1. RMSLE penalizes under-prediction more heavily than over-prediction. It can also be a good metric when you don't want to penalize differences for large prediction values more heavily than for small prediction values. This metric ranges from zero to infinity; a lower value indicates a higher quality model. The RMSLE evaluation metric is returned only if all label and predicted values are non-negative.
+              example:
+                rootMeanSquaredError: 2553.6309
+                meanAbsoluteError: 1373.3932
+                meanAbsolutePercentageError: "Infinity"
+                rSquared: 0.060764354
+                rootMeanSquaredLogError: "NaN"
+    ClassficationEvaluation:
+      allOf:
+        - $ref: "#/components/schemas/TabularEvaluation"
+        - type: object
+          properties:
+            sliceDimensions:
+              type: array
+              description: Output only. All possible dimensions of ModelEvaluationSlices. 
+              items:
+                type: string
+                example: AnnotationSpec
+            modelExplanation:
+              $ref: '#/components/schemas/ModelExplanation'
+            metrics:
+              title: ClassificationEvaluationMetrics
+              type: object
+              properties:
+                auPrc:
+                  type: number
+                  format: float
+                  description: >
+                    The area under the precision-recall (PR) curve, also referred to as average precision. This value ranges from zero to one, where a higher value indicates a higher-quality model.
+                  example: 0.97762364
+                auRoc:
+                  type: number
+                  format: float
+                  description: >
+                    The area under receiver operating characteristic curve. This ranges from zero to one, where a higher value indicates a higher-quality model.
+                  example: 0.97566897
+                logLoss:
+                  type: number
+                  format: float
+                  description: >
+                    The cross-entropy between the model predictions and the target values. This ranges from zero to infinity, where a lower value indicates a higher-quality model.
+                  example: 0.19153881
+                confidenceMetrics:
+                  type: array
+                  description: >
+                    Metrics for each confidenceThreshold in 0.00,0.05,0.10,...,0.95,0.96,0.97,0.98,0.99 and
+                    `positionThreshold` = INT32_MAX_VALUE.
+                    ROC and precision-recall curves, and other aggregated metrics are derived from them. . 
+                  items:
+                    type: object
+                    properties:
+                      confidenceThreshold:
+                        type: number
+                        format: float
+                        description: >
+                          Metrics are computed with an assumption that the Model never returns predictions with
+                          score lower than this value.  A confidence score that determines which predictions to return. A model returns predictions that are at this value or higher. A higher confidence threshold increases precision but lowers recall. Platform returns confidence metrics at different threshold values to show how the threshold affects precision and recall.
+                        example: 0.003269856
+                      maxPredictions:
+                        type: integer
+                        format: int32
+                        description: >
+                          Metrics are computed with an assumption that the Model always returns at most this many
+                          predictions (ordered by their score, descendingly), but they all still need to meet the
+                          `confidenceThreshold`.
+                      recall:
+                        type: number
+                        format: float
+                        description: >
+                          Recall (True Positive Rate) for the given confidence threshold. The fraction of predictions with this class that the model correctly predicted. 
+                        example: 0.9997761
+                      precision:
+                        type: number
+                        format: float
+                        description: >
+                          Precision for the given confidence threshold. The fraction of classification predictions produced by the model that were correct.
+                        example: 0.56993365
+                      falsePositiveRate:
+                        type: number
+                        format: float
+                        description: >
+                          False Positive Rate for the given confidence threshold. The fraction of incorrectly predicted results out of all predicted results.
+                        example: 0.7544213
+                      f1Score:
+                        type: number
+                        format: float
+                        description: >
+                          The harmonic mean of recall and precision. F1 is a useful metric if you're looking for a balance between precision and recall and there's an uneven class distribution.
+                        example: 0.7260018
+                      recallAt1:
+                        type: number
+                        format: float
+                        description: >
+                          The Recall (True Positive Rate) when only considering the
+                          label that has the highest prediction score and not below the confidence
+                          threshold for each example.
+                        example: 0.90911126
+                      precisionAt1:
+                        type: number
+                        format: float
+                        description: >
+                          The precision when only considering the label that has the
+                          highest prediction score and not below the confidence threshold for each example.
+                        example: 0.90911126
+                      falsePositiveRateAt1:
+                        type: number
+                        format: float
+                        description: >
+                          The False Positive Rate when only considering the label that
+                          has the highest prediction score and not below the confidence threshold
+                          for each example.
+                        example: 0.09088874
+                      f1ScoreAt1:
+                        type: number
+                        format: float
+                        description: >
+                          The harmonic mean of recallAt1 and precisionAt1.
+                        example: 0.90911126
+                      truePositiveCount:
+                        type: integer
+                        format: int64
+                        description: >
+                          The number of times a model correctly predicted a positive class.
+                        example: 4466
+                      falsePositiveCount:
+                        type: integer
+                        format: int64
+                        description: >
+                          The number of times a model mistakenly predicted a positive class.
+                        example: 3370
+                      falseNegativeCount:
+                        type: integer
+                        format: int64
+                        description: >
+                          The number of times a model mistakenly predicted a negative class.
+                        example: 1
+                      trueNegativeCount:
+                        type: integer
+                        format: int64
+                        description: >
+                          The number of times a model correctly predicted a negative class.
+                        example: 1097
+                confusionMatrix:
+                  $ref: "#/components/schemas/ConfusionMatrix"
+    ForecastingEvaluation:
+      allOf:
+        - $ref: "#/components/schemas/TabularEvaluation"
+        - type: object
+          properties:
+            metrics:
+              title: ForecastingEvaluationMetrics
+              type: object
+              properties:
+                rootMeanSquaredError:
+                  type: number
+                  format: float
+                  description: >
+                    Root Mean Squared Error (RMSE).
+                  example: 719.0045
+                meanAbsoluteError:
+                  type: number
+                  format: float
+                  description: >
+                    Mean Absolute Error (MAE).
+                  example: 487.0792
+                meanAbsolutePercentageError:
+                  type: number
+                  format: float
+                  description: >
+                    Mean absolute percentage error. Infinity when there are zeros in the ground truth.
+                  example: "Infinity"
+                rSquared:
+                  type: number
+                  format: float
+                  description: >
+                    Coefficient of determination as Pearson correlation coefficient. Undefined when ground truth
+                    or predictions are constant or near constant.
+                  example: 0.8837288
+                rootMeanSquaredLogError:
+                  type: number
+                  format: float
+                  description: >
+                    Root mean squared log error. Undefined when there are negative ground truth values or
+                    predictions.
+                  example: "NaN"
+                quantileMetrics:
+                  type: array
+                  description: >
+                    The metrics at each quantile point. Only populated if the optimization objective is
+                    minimize-quantile-loss.
+                  items:
+                    type: object
+                    properties:
+                      quantile:
+                        type: number
+                        format: double
+                        description: >
+                          The percent quantile for this point.
+                        # exclusiveMinimum: 0.0
+                        # exclusiveMaximum: 1.0
+                      scaledPinballLoss:
+                        type: number
+                        format: float
+                        description: >
+                          The scaled pinball loss at the given quantile.
+                      observedQuantile:
+                        type: number
+                        format: double
+                        description: >
+                          This is a custom metric that calculates the percentage of true values that were less
+                          than the predicted value for that quantile. Only populated when optimizationObjective
+                          in TrainingPipeline.training_task_input is minimize-quantile-loss and each entry
+                          corresponds to an entry in quantiles in TrainingPipeline.training_task_input.
+                        minimum: 0.0
+                        maximum: 1.0
+                    example:
+                      "quantile": 0.2
+                      "scaledPinballLoss": 157.34422
+                      "observedQuantile": 0.15918367346938775
+                weightedAbsolutePercentageError:
+                  type: number
+                  format: float
+                  description: >
+                    Weighted absolute percentage error (WAPE). Not calculated using weight column values.
+                rootMeanSquaredPercentageError:
+                  type: number
+                  format: float
+                  description: >
+                    Root mean sqaured percentage error (RMSPE).
     EvaluationSlice:
       allOf:
         - $ref: '#/components/schemas/Evaluation'
@@ -2083,13 +2370,9 @@ components:
         dedicatedResources:
           $ref: "#/components/schemas/DedicatedResources"
         createTime:
-          format: datetime
-          type: string
-          description: Output only.
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          format: datetime
-          type: string
-          description: Output only. 
+          $ref: "#/components/schemas/DateTime"
     Status:
       description: The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs. Each `Status` message contains three pieces of data - error code, error message, and error details. 
       properties:
@@ -2118,13 +2401,9 @@ components:
           # description: The error result of the operation in case of failure or cancellation.
           $ref: '#/components/schemas/Status'
         createTime:
-          description: Output only. Time when the operation was created.
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          description: Output only. Time when the operation was updated for the last time.
-          format: datetime
-          type: string
+          $ref: "#/components/schemas/DateTime"
         id:
           description: The resource id of the operation
           type: integer
@@ -2192,13 +2471,9 @@ components:
         description:
           type: string
         createTime:
-          format: datetime
-          type: string
-          description: Output only.
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          format: datetime
-          type: string
-          description: Output only. 
+          $ref: "#/components/schemas/DateTime"
     Run:
       type: object
       description: A run is a single execution. The model trained in the child run with the best score will be selected as the AutoML model
@@ -2211,13 +2486,9 @@ components:
         description:
           type: string
         createTime:
-          format: datetime
-          type: string
-          description: Output only.
+          $ref: "#/components/schemas/DateTime"
         updateTime:
-          format: datetime
-          type: string
-          description: Output only.
+          $ref: "#/components/schemas/DateTime"
         modelMetadata:
           $ref: '#/components/schemas/ModelMetadata'
         experimentId:
@@ -2226,8 +2497,8 @@ components:
           $ref: '#/components/schemas/State'
         error:
           $ref: '#/components/schemas/Status'
-        metrics:
-          $ref: '#/components/schemas/Metrics'
+        evaluation:
+          $ref: '#/components/schemas/Evaluation'
         parentId:
           # description: Optional. Runs can have an optional parent
           $ref: "#/components/schemas/ID"
