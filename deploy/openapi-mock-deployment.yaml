@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: openapi-mock
+  name: openapi-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: openapi-mock
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: openapi-mock
+    spec:
+      containers:
+        - env:
+            - name: OPENAPI_MOCK_SPECIFICATION_URL
+              value: https://raw.githubusercontent.com/ml-for-good/automl/main/docs/openapi.yaml
+            - name: OPENAPI_MOCK_PORT
+              value: "8080"
+          image: muonsoft/openapi-mock
+          name: openapi-mock
+          ports:
+            - containerPort: 8080
+          resources: {}
+      restartPolicy: Always
+status: {}

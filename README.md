@@ -17,7 +17,7 @@ AutoML的部署脚本维护在``./deploy``目录下.
 
 ### Prerequisites
 
-开始之前,请确保一下组件安装在你的机器上:
+开始之前,请确保以下组件安装在你的机器上:
 
 - Docker
 - Minikube
@@ -57,7 +57,7 @@ kubectl apply -f deploy
 kubectl get pod,svc,deployment,pv,pvc -n mysql
 ```
 
-### 测试连接
+### 测试Mysql连接
 
 获取 minikube的 `IP` 和service的`NodePort`
 
@@ -74,6 +74,21 @@ minikube service mysql -n mysql --url
 ``用户名:root``
 
 ``密码:root``
+
+
+### Test OpenAPI mock server
+
+Run service tunnel
+
+```bash
+minikube service openapi-mock
+```
+
+Try in your browser
+
+Open in your browser (ensure there is no proxy set)
+
+http://127.0.0.1:TUNNEL_PORT/v1/namespaces/1/datasets
 
 ## License
 
