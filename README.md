@@ -88,7 +88,7 @@ Try in your browser
 
 Open in your browser (ensure there is no proxy set)
 
-http://127.0.0.1:TUNNEL_PORT/v1/namespaces/1/datasets
+http://127.0.0.1:TUNNEL_PORT/v1beta1/namespaces/1/datasets
 
 ## License
 
