@@ -2,4 +2,4 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Run lint-staged tasks in the ui directory
-pnpx lint-staged --cwd ui
+pnpm lint-staged --cwd ui
