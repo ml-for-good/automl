@@ -6,7 +6,7 @@
     <springProperty scope="context" name="springAppName" source="spring.application.automl"/>
     <springProperty scope="context" name="loggerFolder" source="logger.folder"/>
     <!--  log file dir  -->
-    <property name="FILE_PATH" value="${loggerFolder:-build}/logs"/>
+    <property name="FILE_PATH" value="${loggerFolder:-logs}"/>
     <!--  log file name  -->
     <property name="LOG_FILE" value="${FILE_PATH}/app.log"/>
     <!--  color pattern  -->
@@ -40,7 +40,7 @@
     <logger name="org.springframework" level="warn"/>
 
     <springProfile name="dev">
-        <root level="INFO">
+        <root level="DEBUG">
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="LOG_FILE"/>
         </root>
