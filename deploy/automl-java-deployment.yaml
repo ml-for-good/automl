@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: automl-web
+  name: automl-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: automl-web
+  strategy: { }
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: automl-web
+    spec:
+      containers:
+        - image: kayc/automl:demo # change yourself image
+          name: automl-web
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          resources: { }
+      restartPolicy: Always
+status: { }
