@@ -90,6 +90,20 @@ Open in your browser (ensure there is no proxy set)
 
 http://127.0.0.1:TUNNEL_PORT/v1beta1/namespaces/1/datasets
 
+### Test AUTOML java web demo server
+
+Run service tunnel
+
+```bash
+minikube service automl-web
+```
+
+Try in your browser
+
+Open in your browser (ensure there is no proxy set)
+
+http://127.0.0.1:TUNNEL_PORT/swagger-ui/index.html
+
 ## License
 
 Todo
