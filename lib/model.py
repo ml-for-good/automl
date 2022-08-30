@@ -1,5 +1,6 @@
 import autokeras as ak
 import tensorflow as tf
+from lib.base import IModel
 
 REGRESSION = 'regression'
 CLASSIFICATION = 'classification'
@@ -10,7 +11,7 @@ TFLITE = 'tflite'
 ONNX = 'onnx'
 
 
-class StructuredDataModel:
+class StructuredDataModel(IModel):
     """
       Work flow:
        ┌───────────────┐
@@ -53,7 +54,7 @@ class StructuredDataModel:
             tf.keras.callbacks.ProgbarLogger()
         ]
 
-    def train(self, dataset, batch_size=8, epochs=10):
+    def train(self, dataset, batch_size=8, steps=100):
         """
           Args:
             dataset: Train dataset, tf dataset format.
@@ -61,12 +62,12 @@ class StructuredDataModel:
             epochs: Train loops, integer.
         """
         return self.model.fit(dataset,
-                              epochs=epochs,
+                              steps_per_epoch=steps,
                               batch_size=batch_size,
                               callbacks=self.callbacks)
 
-    def evaluate(self, dataset):
-        return self.model.evaluate(dataset)
+    def evaluate(self, dataset, batch_size=8, steps=10):
+        return self.model.evaluate(dataset, batch_size=batch_size, steps=steps, callbacks=self.callbacks)
 
     def export(self, format=SAVED_MODEL):
         model = self.model.export_model()
@@ -84,9 +85,9 @@ class StructuredDataModel:
             raise NotImplemented
 
 
-class TextModel:
+class TextModel(IModel):
     pass
 
 
-class ImageModel:
+class ImageModel(IModel):
     pass
