@@ -2376,13 +2376,6 @@ components:
                           Metrics are computed with an assumption that the Model never returns predictions with
                           score lower than this value.  A confidence score that determines which predictions to return. A model returns predictions that are at this value or higher. A higher confidence threshold increases precision but lowers recall. Platform returns confidence metrics at different threshold values to show how the threshold affects precision and recall.
                         example: 0.003269856
-                      maxPredictions:
-                        type: integer
-                        format: int32
-                        description: >
-                          Metrics are computed with an assumption that the Model always returns at most this many
-                          predictions (ordered by their score, descendingly), but they all still need to meet the
-                          `confidenceThreshold`.
                       recall:
                         type: number
                         format: float
