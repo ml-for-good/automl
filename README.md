@@ -1,3 +1,5 @@
+
+
 # AutoML
 
 We're designing the AutoML platform that would make it easy for non-technical people to build custom AI solutions and
@@ -22,28 +24,33 @@ AutoML的部署脚本维护在``./deploy``目录下.
 - Docker
 - Minikube
 
-安装教程:
+如果没有，参考如下安装教程:
 
 **Mac OS:**
 
-- Docker: https://docs.docker.com/desktop/install/mac-install/
+Minikube在macOS上首选驱动为Docker。
 
-- Minikube: ``brew install minikube``
-  - 详细参考:https://minikube.sigs.k8s.io/docs/start/
+- 启动Docker
+- 下载Minikube: `brew install minikube`
+- 使用 docker 驱动启动集群：`minikube start --driver=docker`
+- 配置docker 为默认驱动程序：`minikube config set driver docker`
+- 执行`kubectl get node` 验证启动是否成功。
 
 **Linux:** Todo
 
-**Windows:** Todo
+**Windows:**
+
+Minikube在Windows上首选驱动为Hyper-V+Docker。我们使用Docker来作为驱动程序。
+
+- 启动Docker
+- 下载`minikube.exe`文件，然后将`minikube.exe`添加到环境变量的`PATH`中。
+- 使用 docker 驱动启动集群：`minikube start --driver=docker`
+- 配置docker 为默认驱动程序：`minikube config set driver docker`
+- 执行`kubectl get node` 验证启动是否成功
 
 ### Start Deploy
 
 开始部署前,确保启动minikube和获取最新部署文件!!!
-
-启动Minikube: https://minikube.sigs.k8s.io/docs/drivers/docker/
-
-```bash
-minikube start --driver=docker #使用 docker 驱动启动集群
-```
 
 在``automl``目录下执行命令:
 
