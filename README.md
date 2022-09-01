@@ -24,8 +24,6 @@ AutoML的部署脚本维护在``./deploy``目录下.
 - Docker
 - Minikube
 
-如果没有，参考如下安装教程:
-
 **Mac OS:**
 
 Minikube在macOS上首选驱动为Docker。
