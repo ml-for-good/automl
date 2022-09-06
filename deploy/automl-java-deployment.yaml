@@ -18,9 +18,9 @@ spec:
         io.kompose.service: automl-web
     spec:
       containers:
-        - image: kayc/automl:demo # change yourself image
+        - image: automl/automl:v1 # change yourself image
           name: automl-web
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never # load image from local
           ports:
             - containerPort: 8081
           resources: { }
