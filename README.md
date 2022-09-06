@@ -77,12 +77,28 @@ minikube service mysql -n mysql --url
 ``密码:root``
 
 
+### Test OpenAPI mock server
+
+Run service tunnel
+
+```bash
+minikube service openapi-mock
+```
+
+Try in your browser
+
+Open in your browser (ensure there is no proxy set)
+
+http://127.0.0.1:TUNNEL_PORT/v1beta1/namespaces/1/datasets
+
+## License
+
 ### Test AUTOML java web demo server
 
 Load local image to minikube
 
 ```bash
-minikube image load <image>
+minikube image load automl/automl:v1 # minikube image load <image>, your local image
 ```
 Run service tunnel
 
@@ -111,7 +127,5 @@ kubectl logs <resource name>
 ```bash
 kubectl delete deploy automl-web
 ```
-
-## License
 
 Todo
