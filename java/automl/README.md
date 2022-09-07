@@ -51,6 +51,11 @@ The following guides illustrate how to run the project:
 
 #### Build docker image
 
+build executable jar
+```bash
+mvn clean package
+```
+
 build image
 ```bash
  docker build --build-arg  JAR_FILE=automl-web/target/automl-web-0.0.1-SNAPSHOT.jar -t automl/automl:v1 .

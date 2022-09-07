@@ -42,6 +42,16 @@ Minikube在Windows上首选驱动为Hyper-V+Docker。我们使用Docker来作为
 - 配置 Docker 为默认驱动程序：`minikube config set driver docker`
 - 执行`kubectl get node` 验证启动是否成功
 
+
+**加载本地镜像到 minikube:**
+- 如果需要加载automl java web镜像，请执行下面命令
+```bash
+minikube image load automl/automl:v1 # minikube image load <image>, your local image
+```
+- 如何构建java镜像文档请看 java/automl/README.md
+
+
+
 ### Start Deploy
 
 开始部署前,确保启动minikube和获取最新部署文件!!!
