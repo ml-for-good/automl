@@ -44,13 +44,21 @@ Minikube在Windows上首选驱动为Hyper-V+Docker。我们使用Docker来作为
 
 
 **加载本地镜像到 minikube:**
-- 如果需要加载automl java web镜像，请执行下面命令
+如果需要加载automl java web镜像，请在工程根目录下执行下面命令
+  生成可执行jar包:
+```bash
+cd  java/automl
+mvn clean package -Dmaven.test.skip=true
+```
+构建镜像:
+```bash
+ docker build --build-arg  JAR_FILE=automl-web/target/automl-web-0.0.1-SNAPSHOT.jar -t automl/automl:v1 .
+```
+
+加载本地镜像：
 ```bash
 minikube image load automl/automl:v1 # minikube image load <image>, your local image
 ```
-- 如何构建java镜像文档请看 java/automl/README.md
-
-
 
 ### Start Deploy
 

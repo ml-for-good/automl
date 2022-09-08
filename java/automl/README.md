@@ -53,7 +53,7 @@ The following guides illustrate how to run the project:
 
 build executable jar
 ```bash
-mvn clean package
+mvn clean package -Dmaven.test.skip=true
 ```
 
 build image
