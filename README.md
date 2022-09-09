@@ -42,6 +42,19 @@ Minikube在Windows上首选驱动为Hyper-V+Docker。我们使用Docker来作为
 - 配置 Docker 为默认驱动程序：`minikube config set driver docker`
 - 执行`kubectl get node` 验证启动是否成功
 
+
+**加载本地镜像到 minikube:**
+加载automl java web镜像，请在java工程根目录下执行下面命令
+构建镜像:
+```bash
+docker build -t automl/automl:v1 .
+```
+
+加载本地镜像：
+```bash
+minikube image load automl/automl:v1 # minikube image load <image>, your local image
+```
+
 ### Start Deploy
 
 开始部署前,确保启动minikube和获取最新部署文件!!!
@@ -92,5 +105,40 @@ Open in your browser (ensure there is no proxy set)
 http://127.0.0.1:TUNNEL_PORT/v1beta1/namespaces/1/datasets
 
 ## License
+
+### Test AUTOML java web demo server
+
+Load local image to minikube
+
+```bash
+minikube image load automl/automl:v1 # minikube image load <image>, your local image
+```
+Run service tunnel
+
+```bash
+minikube service automl-web
+```
+
+Try in your browser
+
+Open in your browser (ensure there is no proxy set)
+
+http://127.0.0.1:TUNNEL_PORT/swagger-ui/index.html
+
+Get pod, deployment status, name
+```bash
+kubectl get pod,deployment
+```
+
+Get logs
+```bash
+kubectl logs <resource name>
+```
+
+### Stop automl-web pod & deployment
+
+```bash
+kubectl delete deploy automl-web
+```
 
 Todo

@@ -1,3 +1,5 @@
+server:
+  port: 8081
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -13,4 +15,3 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath:mapper/automl/*.xml
-
