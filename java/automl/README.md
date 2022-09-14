@@ -12,9 +12,9 @@
 
 ### environment
 
-jdk-17      
-maven  
-idea  
+jdk-17
+maven
+idea
 lombok plugin
 
 ### Guides
@@ -49,3 +49,23 @@ The following guides illustrate how to run the project:
 * curl -X POST "http://localhost:8080/test/insert" -H "accept: */*" -H "Content-Type: application/json" -d "{ \"id\":
   444, \"name\": \"333\"}"
 
+#### Build docker image
+
+build executable jar
+```bash
+mvn clean package -Dmaven.test.skip=true
+```
+
+build image
+```bash
+ docker build --build-arg  JAR_FILE=automl-web/target/automl-web-0.0.1-SNAPSHOT.jar -t automl/automl:v1 .
+```
+The option -t specifies the image name and optionally a username and tag in the ‘username/imagename:tag’ format.
+list  image
+```bash
+docker image ls
+```
+run
+```bash
+docker run -d -p 8081:8081 --name automl automl/automl:v1
+```
