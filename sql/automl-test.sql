@@ -16,22 +16,22 @@ CREATE TABLE `ml_dataset`
     `uri`          text                               NOT NULL COMMENT '存储链接',
     `creator_id`    bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建者',
     `create_time`  bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建时间',
-    `update_id`    bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
+    `updater_id`    bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
     `update_time`  bigint(20)                         NOT NULL DEFAULT '0' COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT = '数据集表';
 
-INSERT INTO `automl-test`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, update_id,
+INSERT INTO `automl-test`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, updater_id,
                                       update_time)
 VALUES (1, 'testDataset', 'testDatasetDesc', 1, 'https://www.baidu.com/', 1, 1660116762740, 0, 0);
-INSERT INTO `automl-test`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, update_id,
+INSERT INTO `automl-test`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, updater_id,
                                       update_time)
 VALUES (2, 'testDataset2', 'testDataset2', 1, 'https://www.baidu.com/', 1, 1660469278060, 0, 0);
 
 /**
 命令空间表
-id, name, description, owner_id, creator_id, update_id
+id, name, description, owner_id, creator_id, updater_id
  */
 CREATE TABLE `ml_namespace`
 (
@@ -41,12 +41,12 @@ CREATE TABLE `ml_namespace`
     `owner_id`    bigint(20)                         NOT NULL DEFAULT '0' COMMENT '所有者',
     `creator_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建者',
     `create_time` bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建时间',
-    `update_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
+    `updater_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
     `update_time` bigint(20)                         NOT NULL DEFAULT '0' COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT = '命名空间表';
-INSERT INTO `automl-test`.ml_namespace (id, name, description, owner_id, creator_id, create_time, update_id, update_time)
+INSERT INTO `automl-test`.ml_namespace (id, name, description, owner_id, creator_id, create_time, updater_id, update_time)
 VALUES (1, 'testNamespace', '测试命名空间', 1, 1, 1660359415130, 0, 0);
 
 /**
@@ -95,7 +95,7 @@ CREATE TABLE `ml_user_role_group`
     `auto_time`   bigint(20) unsigned                NOT NULL DEFAULT '0' COMMENT '授权时间',
     `creator_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建者',
     `create_time` bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建时间',
-    `update_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
+    `updater_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
     `update_time` bigint(20)                         NOT NULL DEFAULT '0' COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_group_role_user` (`group_id`, `role_id`, `user_id`)
@@ -116,7 +116,7 @@ CREATE TABLE `ml_model_version`
     `meta_id`     bigint(20)                         NOT NULL COMMENT '模型元数据id',
     `creator_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建者',
     `create_time` bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建时间',
-    `update_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
+    `updater_id`   bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
     `update_time` bigint(20)                         NOT NULL DEFAULT '0' COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE InnoDB
@@ -139,7 +139,7 @@ CREATE TABLE `ml_model`
     `deployment_state` int(10)                            NOT NULL DEFAULT '0' COMMENT '发布版本 0: 未知, 1:已经发布, 2:未发布',
     `creator_id`        bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建者',
     `create_time`      bigint(20)                         NOT NULL DEFAULT '0' COMMENT '创建时间',
-    `update_id`        bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
+    `updater_id`        bigint(20)                         NOT NULL DEFAULT '0' COMMENT '修改者',
     `update_time`      bigint(20)                         NOT NULL DEFAULT '0' COMMENT '更新时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
@@ -170,7 +170,6 @@ CREATE TABLE `ml_model_meta`
 
 /**
 job
-
  */
 CREATE TABLE `ml_job`
 (

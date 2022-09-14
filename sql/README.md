@@ -1,4 +1,7 @@
 
+## TODO
+* 1、 automl.sql和automl-test.sql 按照k8s的模式进行部署初始化.
+
 ## [进行中-待补充]数据存储在mysql
 
 > 注意: 目前用的mysql-version:5.7
@@ -21,5 +24,5 @@
 ### 2. ml_model中display_name: 命名空间下的名称, 需要唯一?
 > I think reference namespace_id.
 
-### 3.
+###
 
