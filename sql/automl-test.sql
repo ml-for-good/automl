@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS `automl`;
-CREATE DATABASE `automl`;
+DROP DATABASE IF EXISTS `automl-test`;
+CREATE DATABASE `automl-test`;
 
-USE `automl`;
+USE `automl-test`;
 
 /**
 数据集表:
@@ -22,10 +22,10 @@ CREATE TABLE `ml_dataset`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT = '数据集表';
 
-INSERT INTO `automl`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, updater_id,
+INSERT INTO `automl-test`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, updater_id,
                                       update_time)
 VALUES (1, 'testDataset', 'testDatasetDesc', 1, 'https://www.baidu.com/', 1, 1660116762740, 0, 0);
-INSERT INTO `automl`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, updater_id,
+INSERT INTO `automl-test`.ml_dataset (id, name, description, namespace_id, uri, creator_id, create_time, updater_id,
                                       update_time)
 VALUES (2, 'testDataset2', 'testDataset2', 1, 'https://www.baidu.com/', 1, 1660469278060, 0, 0);
 
@@ -46,7 +46,7 @@ CREATE TABLE `ml_namespace`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4 COMMENT = '命名空间表';
-INSERT INTO `automl`.ml_namespace (id, name, description, owner_id, creator_id, create_time, updater_id, update_time)
+INSERT INTO `automl-test`.ml_namespace (id, name, description, owner_id, creator_id, create_time, updater_id, update_time)
 VALUES (1, 'testNamespace', '测试命名空间', 1, 1, 1660359415130, 0, 0);
 
 /**
