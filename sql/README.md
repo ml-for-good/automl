@@ -1,6 +1,5 @@
 
 ## TODO
-* 1、 automl.sql和automl-test.sql 按照k8s的模式进行部署初始化.
 
 ## [进行中-待补充]数据存储在mysql
 
