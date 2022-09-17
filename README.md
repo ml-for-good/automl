@@ -89,7 +89,8 @@ minikube service mysql -n mysql --url
 
 ``密码:root``
 
-### 初始化mysql库和表
+### [可选]初始化mysql库和表
+初始化mysql库和表已经放在了deploy/mysql-deployment.yaml中了.
 
 进入automl根目录执行db库automl和automl-test初始化:
 
