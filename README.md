@@ -89,6 +89,7 @@ minikube service mysql -n mysql --url
 
 ``密码:root``
 
+进入之后, 可以看到库automl和automl-test和相关表已经创建了.
 
 ### Test OpenAPI mock server
 
