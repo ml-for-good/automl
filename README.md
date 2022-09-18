@@ -89,23 +89,7 @@ minikube service mysql -n mysql --url
 
 ``密码:root``
 
-### [可选]初始化mysql库和表
-初始化mysql库和表已经放在了deploy/mysql-deployment.yaml中了.
-
-进入automl根目录执行db库automl和automl-test初始化:
-
-> kubectl  exec -it <mysql-pod-name>  -n mysql -- mysql -uroot -proot <database-name>  < ./sql/automl-test.sql
-
-```bash
-kubectl  exec -it mysql-5b5f456576-xpzf8 -n mysql -- mysql -uroot -proot automl  <  ./sql/automl.sql
-kubectl  exec -it mysql-5b5f456576-xpzf8 -n mysql -- mysql -uroot -proot automl-test  <  ./sql/automl-test.sql
-```
-
-mysql-pod-name 可以使用下面这个语句进行查询
-
-```bash
-kubectl get pod,svc,deployment,pv,pvc -n mysql
-```
+进入之后, 可以看到库automl和automl-test和相关表已经创建了.
 
 ### Test OpenAPI mock server
 
