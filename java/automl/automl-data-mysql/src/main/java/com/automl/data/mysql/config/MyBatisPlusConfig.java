@@ -1,4 +1,4 @@
-package com.automl.web.configuration;
+package com.automl.data.mysql.config;
 
 import org.springframework.context.annotation.Configuration;
 

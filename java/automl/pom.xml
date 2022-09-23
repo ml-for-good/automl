@@ -25,10 +25,11 @@
     <properties>
         <java.version>17</java.version>
         <mybatis-spring-boot-starter.version>2.2.2</mybatis-spring-boot-starter.version>
-        <mysql-connector-java.version>8.0.30</mysql-connector-java.version>
+        <mysql-connector-java.version>5.1.40</mysql-connector-java.version>
         <mybatis-plus-boot-starter.version>3.5.2</mybatis-plus-boot-starter.version>
         <lombok.version>1.18.24</lombok.version>
         <swagger2.version>3.0.0</swagger2.version>
+        <crescent-utls>1.0.64-RELEASE</crescent-utls>
     </properties>
 
     <dependencyManagement>
@@ -67,6 +68,13 @@
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-boot-starter</artifactId>
                 <version>${swagger2.version}</version>
+            </dependency>
+
+            <!--工具包-->
+            <dependency>
+                <groupId>io.github.qingguox</groupId>
+                <artifactId>Crescent-Toolkit</artifactId>
+                <version>${crescent-utls}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
