@@ -5,13 +5,7 @@ server:
 
 spring:
     datasource:
-        prod:
-            jdbc-url: jdbc:mysql://127.0.0.1:3306/automl?useUnicode=true&characterEncoding=utf-8&useSSL=false
-            username: root
-            password: 123456
-            driver-class-name: com.mysql.jdbc.Driver
-
-        test:
+        primary:
             jdbc-url: jdbc:mysql://127.0.0.1:3306/automl-test?useUnicode=true&characterEncoding=utf-8&useSSL=false
             username: root
             password: 123456

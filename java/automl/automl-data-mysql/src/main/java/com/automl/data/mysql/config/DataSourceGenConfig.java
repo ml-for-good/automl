@@ -29,16 +29,12 @@ public class DataSourceGenConfig {
     @Autowired
     private HostInfoHelper hostInfoHelper;
     @Autowired
-    @Qualifier("testDataSource")
-    private DataSource testDataSource;
-    @Autowired
-    @Qualifier("prodDataSource")
-    private DataSource prodDataSource;
+    @Qualifier("primaryDataSource")
+    private DataSource primaryDataSource;
 
     private DataSource getDataSource() {
-        final boolean isTest = hostInfoHelper.debugTest();
         logger.info("dataSource load env : {}", hostInfoHelper.active());
-        return isTest ? testDataSource : prodDataSource;
+        return primaryDataSource;
     }
 
     /**

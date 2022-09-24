@@ -17,7 +17,7 @@ class AutomlApplicationTests implements CommandLineRunner {
 
     void insertIntoTest() {
         AutomlTest automlTest = new AutomlTest();
-        automlTest.setId(102);
+        automlTest.setId(103);
         automlTest.setName("sss");
         int count = testMapper.insert(automlTest);
         System.out.println("insert count : {}" + count);
