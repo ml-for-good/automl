@@ -18,7 +18,7 @@ spec:
         io.kompose.service: automl-web
     spec:
       containers:
-        - image: automl/automl:v1 # change yourself image
+        - image: automl/automl:v1beta1 # change yourself image
           name: automl-web
           imagePullPolicy: Never # load image from local
           ports:
