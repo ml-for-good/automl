@@ -6,7 +6,7 @@ server:
 spring:
     # 默认是以 dev
     profiles:
-        active: test
+        active: dev
 
 
 #mybatis:

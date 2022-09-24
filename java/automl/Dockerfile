@@ -31,4 +31,4 @@ FROM eclipse-temurin:17.0.4_8-jre-jammy
 WORKDIR /app
 EXPOSE 8081
 COPY --from=builder target/app.jar ./app.jar
-ENTRYPOINT exec java -Dspring.profiles.active=test -jar /app/app.jar
+ENTRYPOINT exec java -Dspring.profiles.active=dev -jar /app/app.jar

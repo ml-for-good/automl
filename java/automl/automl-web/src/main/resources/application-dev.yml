@@ -6,7 +6,7 @@ server:
 spring:
     datasource:
         primary:
-            jdbc-url: jdbc:mysql://localhost:3306/automl?useUnicode=true&characterEncoding=utf-8&useSSL=false
+            jdbc-url: jdbc:mysql://mysql.mysql.svc.cluster.local:3306/automl?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
             username: root
             password: root
             driver-class-name: com.mysql.jdbc.Driver
