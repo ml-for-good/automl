@@ -12,6 +12,7 @@ spec:
     - ReadWriteOnce # 只能被一个容器访问，如果能被多个容器访问那么设置为ReadWriteMany
   hostPath:
     path: "/var/mysql"
+    type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
