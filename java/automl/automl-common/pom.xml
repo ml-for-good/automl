@@ -15,7 +15,6 @@
         <dependency>
             <groupId>io.github.qingguox</groupId>
             <artifactId>Crescent-Toolkit</artifactId>
-            <version>${crescent-utls}</version>
         </dependency>
     </dependencies>
     <build>

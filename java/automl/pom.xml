@@ -29,7 +29,7 @@
         <mybatis-plus-boot-starter.version>3.5.2</mybatis-plus-boot-starter.version>
         <lombok.version>1.18.24</lombok.version>
         <swagger2.version>3.0.0</swagger2.version>
-        <crescent-utls>1.0.64-RELEASE</crescent-utls>
+        <crescent-utls.version>1.0.64-RELEASE</crescent-utls.version>
     </properties>
 
     <dependencyManagement>
@@ -74,7 +74,7 @@
             <dependency>
                 <groupId>io.github.qingguox</groupId>
                 <artifactId>Crescent-Toolkit</artifactId>
-                <version>${crescent-utls}</version>
+                <version>${crescent-utls.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
