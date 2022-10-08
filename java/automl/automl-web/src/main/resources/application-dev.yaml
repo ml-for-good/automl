@@ -6,6 +6,20 @@ spring:
     url: jdbc:mysql://mysql.mysql.svc.cluster.local:3306/automl?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 123456
+  mail:
+    default-encoding: UTF-8
+    protocol: smtp
+    host: smtp.163.com
+    port: 465
+    username: #配置发送邮件
+    password: #配置发送邮件秘钥
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
 
 #mybatis:
 #
