@@ -257,6 +257,12 @@ data:
           PRIMARY KEY (`id`)
       ) ENGINE = InnoDB
         DEFAULT CHARSET = utf8mb4 COMMENT = '模型表';
+
+      CREATE TABLE `automl_test`
+      ( `id` int DEFAULT NULL,
+        `name` varchar(10000) DEFAULT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT = '测试表';
+
       DROP DATABASE IF EXISTS `automl`;
       CREATE DATABASE `automl`;
 
@@ -447,3 +453,8 @@ data:
         PRIMARY KEY (`id`)
       ) ENGINE = InnoDB
       DEFAULT CHARSET = utf8mb4 COMMENT = '模型表';
+
+      CREATE TABLE `automl_test`
+      ( `id` int DEFAULT NULL,
+        `name` varchar(10000) DEFAULT NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT = '测试表';

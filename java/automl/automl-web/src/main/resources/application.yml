@@ -1,0 +1,19 @@
+server:
+    port: 8081
+    path:
+        globalPrefix: /v1beta1
+
+spring:
+    # 默认是以 dev
+    profiles:
+        active: dev
+
+
+#mybatis:
+#
+#  type-aliases-package: com.automl.api.entity
+#  configuration:
+#    map-underscore-to-camel-case: true
+
+mybatis-plus:
+    mapper-locations: classpath:mapper/automl/*.xml

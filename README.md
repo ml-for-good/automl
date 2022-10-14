@@ -139,6 +139,23 @@ kubectl logs <resource name>
 kubectl delete deploy automl-web
 ```
 
+### switch java application link mysql prod.
+
+> 默认java/automl/目录下的Dockerfile中的 -Dspring.profiles.active=dev 环境是dev环境, 采用automl库
+
+> 在本地自己测试部署的时候, 可以修改这个值为test这样, automl-web 服务采用automl-test库.
+
+#### test link
+
+> 部署完automl-web之后, 本地执行以下命令.
+
+```
+curl -X POST "http://127.0.0.1:TUNNEL_PORT/v1beta1/test/insert" -H "accept: /" -H "Content-Type: application/json" -d "{ "id": 160676, "name": "sss"}"
+```
+
+我们可以看到已经有数据了. (我当时是以test环境启动的)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/e628364a4f1d4d89b7f25b5096a337bd.png)
+
 Todo
 
 ## License
