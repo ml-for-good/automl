@@ -25,4 +25,5 @@
 > I think reference namespace_id.
 
 ###
+auth.sql中相关字段还需根据原型来完善。
 

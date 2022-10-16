@@ -31,11 +31,6 @@
             <artifactId>automl-data-mysql</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>com.automl</groupId>
-            <artifactId>automl-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
 </project>

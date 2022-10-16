@@ -1,0 +1,21 @@
+server:
+    port: 8081
+    path:
+        globalPrefix: /v1beta1
+
+spring:
+    datasource:
+        primary:
+            jdbc-url: jdbc:mysql://mysql.mysql.svc.cluster.local:3306/automl-test?characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+            username: root
+            password: root
+            driver-class-name: com.mysql.jdbc.Driver
+
+#mybatis:
+#
+#  type-aliases-package: com.automl.api.entity
+#  configuration:
+#    map-underscore-to-camel-case: true
+
+mybatis-plus:
+    mapper-locations: classpath:mapper/automl/*.xml

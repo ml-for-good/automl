@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration debug="true" scan="false">
+    <contextName>logback-test</contextName>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="springAppName" source="spring.application.automl"/>
+    <springProperty scope="context" name="loggerFolder" source="logger.folder"/>
+    <!--  log file dir  -->
+    <property name="FILE_PATH" value="${loggerFolder:-logs}"/>
+    <!--  log file name  -->
+    <property name="LOG_FILE" value="${FILE_PATH}/app.log"/>
+    <!--  color pattern  -->
+    <property name="PATTERN"
+              value="[%highlight(%-5level)][%green(%d{yyyy-MM-dd HH:mm:ss.SSS})][%boldMagenta(%class{39}.%M\\(%line\\))][%thread] -%msg%n"/>
+
+    <!--  console output  -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <encoder>
+            <pattern>${PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="org.springframework" level="warn"/>
+
+    <springProfile name="dev">
+        <root level="DEBUG">
+            <appender-ref ref="STDOUT"/>
+            <appender-ref ref="LOG_FILE"/>
+        </root>
+    </springProfile>
+    <springProfile name="test">
+        <root level="INFO">
+            <appender-ref ref="LOG_FILE"/>
+        </root>
+    </springProfile>
+    <springProfile name="pro">
+        <root level="INFO">
+            <appender-ref ref="LOG_FILE"/>
+        </root>
+    </springProfile>
+</configuration>

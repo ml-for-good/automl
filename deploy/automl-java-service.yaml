@@ -6,10 +6,12 @@ metadata:
     io.kompose.service: automl-web
   name: automl-web
 spec:
+  type: NodePort
   ports:
     - name: "8081"
       port: 8081
       targetPort: 8081
+      nodePort: 32082
   selector:
     io.kompose.service: automl-web
 status:
