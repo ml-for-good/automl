@@ -20,7 +20,7 @@ https://www.keycloak.org/getting-started/getting-started-docker
       ```
 4. try: `POST http://localhost:8080/realms/automl_dev/protocol/openid-connect/token`
     - with:  
-        <img src="./img/2.jpg" width="60%"/>  
+        <img src="./img/2.png" width="60%"/>  
         where you can get client_id with the same name client, client_secret by  
         <img src="./img/3.jpg" width="60%"/> 
     - response:
