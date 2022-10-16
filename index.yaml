@@ -3,12 +3,12 @@ entries:
   deploy:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-10-16T20:45:06.497943+08:00"
+    created: "2022-10-16T21:07:17.981471+08:00"
     description: A Helm chart for Kubernetes
-    digest: d8b5be9548c54114e7fbb4dd478550b1c875d9edfd35c0d6434e4cb4769fc4bf
+    digest: 53c2a336521e97952b170fe2719776981f1421061cc0986c25d00f13f955c20c
     name: deploy
     type: application
     urls:
     - https://jia9izhang.github.io/automl/deploy-0.1.0.tgz
     version: 0.1.0
-generated: "2022-10-16T20:45:06.49703+08:00"
+generated: "2022-10-16T21:07:17.980865+08:00"
