@@ -14,8 +14,8 @@ public enum ResultCode implements IntDescValue {
 
     ;
 
-    private int code;
-    private String msg;
+    private final int code;
+    private final String msg;
 
     ResultCode(int code, String msg) {
         this.code = code;
