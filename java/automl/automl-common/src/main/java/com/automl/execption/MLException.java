@@ -1,10 +1,10 @@
 package com.automl.execption;
 
+import com.automl.enums.ResultCode;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import com.automl.enums.ResultCode;
 
 /**
  * @author wangqingwei
@@ -41,8 +41,8 @@ public class MLException extends RuntimeException {
     }
 
 
-    public MLException(ResultCode code, String msg, Throwable cause) {
-        super(msg, cause);
+    public MLException(ResultCode code, String message, Throwable cause) {
+        super(message, cause);
         this.code = code;
         this.message = message;
     }
