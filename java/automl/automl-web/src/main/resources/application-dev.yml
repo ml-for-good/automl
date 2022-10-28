@@ -10,6 +10,19 @@ spring:
             username: root
             password: root
             driver-class-name: com.mysql.jdbc.Driver
+    mail:
+        default-encoding: UTF-8
+        protocol: smtp
+        host: smtp.163.com
+        port: 465
+        username: #配置发送邮件
+        password: #配置发送邮件秘钥
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    ssl:
+                        enable: true
 
 #mybatis:
 #

@@ -20,7 +20,8 @@ AutoML的部署脚本维护在``./deploy``目录下.
 开始之前,请确保以下组件安装在你的机器上:
 
 - Docker: (参考:https://docs.docker.com/desktop/install/mac-install/）
-- Minikube:  (参考::https://minikube.sigs.k8s.io/docs/start/)
+- Minikube:  (参考:https://minikube.sigs.k8s.io/docs/start/)
+- Helm:(参考:https://helm.sh/zh/docs/)
 
 **Mac OS:**
 
@@ -56,12 +57,22 @@ minikube image load automl/automl:v1beta1 # minikube image load <image>, your lo
 
 ### Start Deploy
 
-开始部署前,确保启动minikube和获取最新部署文件!!!
-
-在``automl``目录下执行命令:
+配置**automl**仓库: 
 
 ```bash
-kubectl apply -f deploy
+helm repo add automl https://ml-for-good.github.io/automl/
+```
+
+搜索automl仓库下的chart:
+
+```bash
+helm search repo automl
+```
+
+安装automl的helm包：
+
+```bash
+helm install automl automl/deploy
 ```
 
 查看pod,svc,deployment信息:

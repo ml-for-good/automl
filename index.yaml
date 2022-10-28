@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  deploy:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-10-16T21:07:17.981471+08:00"
+    description: A Helm chart for Kubernetes
+    digest: 53c2a336521e97952b170fe2719776981f1421061cc0986c25d00f13f955c20c
+    name: deploy
+    type: application
+    urls:
+    - https://jia9izhang.github.io/automl/deploy-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-10-16T21:07:17.980865+08:00"
