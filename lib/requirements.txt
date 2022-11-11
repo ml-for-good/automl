@@ -2,3 +2,7 @@ tensorflow
 autokeras
 tensorflow-io
 yapf
+sklearn
+pandas
+numpy
+scipt
